@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class ThreadController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -36,7 +41,12 @@ class ThreadController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $thread = Thread::create([
+            'title' => $request->input('title'),
+            'body' => $request->input('body'),
+            'user_id' => auth()->id(),
+        ]);
+        return redirect("thread/{$thread->id}");
     }
 
     /**
