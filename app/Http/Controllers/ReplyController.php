@@ -13,7 +13,10 @@ class ReplyController extends Controller
 
     public function store(Thread $thread)
     {
-        $thread->replies()->create(request(['body', 'user_id']));
+        $thread->replies()->create([
+            'body' => request('body'),
+            'user_id' => auth()->id(),
+        ]);
 
         return back();
     }
