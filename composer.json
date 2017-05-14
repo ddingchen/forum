@@ -20,7 +20,10 @@
         ],
         "psr-4": {
             "App\\": "app/"
-        }
+        },
+        "files": [
+            "tests/Util/functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
