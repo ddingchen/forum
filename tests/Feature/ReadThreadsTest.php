@@ -16,7 +16,7 @@ class ReadThreadsTest extends TestCase
     public function test_a_user_can_read_a_single_thread()
     {
         $thread = create('App\Thread');
-        $response = $this->get("thread/{$thread->id}");
+        $response = $this->get($thread->path());
         $response->assertSee($thread->body);
     }
 
@@ -24,7 +24,7 @@ class ReadThreadsTest extends TestCase
     {
         $thread = create('App\Thread');
         $reply = create('App\Reply', ['thread_id' => $thread->id]);
-        $response = $this->get("thread/{$thread->id}");
+        $response = $this->get($thread->path());
         $response->assertSee($reply->body);
     }
 }

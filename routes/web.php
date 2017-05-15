@@ -19,5 +19,7 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::resource('thread', 'ThreadController');
-Route::post('thread/{thread}/reply', 'ReplyController@store');
+Route::resource('thread', 'ThreadController', ['except' => ['show']]);
+Route::get('thread/{channel}/{thread}', 'ThreadController@show');
+
+Route::post('thread/{channel}/{thread}/reply', 'ReplyController@store');
