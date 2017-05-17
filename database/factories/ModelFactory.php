@@ -52,6 +52,6 @@ $factory->define(App\Channel::class, function ($faker) {
     $word = $faker->word;
     return [
         'name' => $word,
-        'slog' => $word,
+        'slug' => $word,
     ];
 });

@@ -25,6 +25,6 @@ class Thread extends Model
 
     public function path()
     {
-        return "/thread/{$this->channel->slog}/{$this->id}";
+        return "/thread/{$this->channel->slug}/{$this->id}";
     }
 }
