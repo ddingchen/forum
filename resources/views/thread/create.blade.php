@@ -11,16 +11,35 @@
                     <form method="post" action="/thread">
                         {{ csrf_field() }}
                         <div class="form-group">
+                            <label for="channel_id">Choose a channel</label>
+                            <select class="form-control" name="channel_id" required>
+                                <option value="">Choose a channel</option>
+                                @foreach(App\Channel::all() as $channel)
+                                <option value="{{ $channel->id }}" {{ old('channel_id') == $channel->id ? 'selected' : '' }}>{{ $channel->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label>Title</label>
-                            <input class="form-control" name="title" />
+                            <input class="form-control" name="title" value="{{ old('title') }}" required/>
                         </div>
 
                         <div class="form-group">
                             <label>Body</label>
-                            <textarea class="form-control" rows="5" name="body"></textarea>
+                            <textarea class="form-control" rows="5" name="body" required>{{ old('body') }}</textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                        @if(count($errors))
+                        <ul class="alert alert-danger">
+                            @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        @endif
                     </form>
                 </div>
             </div>
