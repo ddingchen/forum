@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Filters\ThreadFilter;
 use Illuminate\Database\Eloquent\Model;
 
 class Thread extends Model
@@ -21,6 +22,17 @@ class Thread extends Model
     public function channel()
     {
         return $this->belongsTo('App\Channel');
+    }
+
+    public function scopefilter($query, ThreadFilter $filter)
+    {
+        return $filter->apply($query);
+    }
+
+    public function scopeBy($query, $username)
+    {
+        $user = User::where('name', $username)->firstOrFail();
+        return $query->where('user_id', $user->id);
     }
 
     public function path()
