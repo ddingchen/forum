@@ -19,9 +19,15 @@
             'csrfToken' => csrf_token(),
         ]) !!};
     </script>
+
+    <style type="text/css">
+        #app { padding-bottom: 50px }
+        .level { display: flex; align-items: center }
+        .flex { flex-grow: 1 }
+    </style>
 </head>
 <body>
-    <div id="app" style="padding-bottom: 50px">
+    <div id="app">
         <nav class="navbar navbar-default navbar-static-top">
             <div class="container">
                 <div class="navbar-header">
