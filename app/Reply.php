@@ -22,6 +22,11 @@ class Reply extends Model
         return $this->morphMany('App\Favorite', 'favorite');
     }
 
+    public function thread()
+    {
+        return $this->belongsTo('App\Thread');
+    }
+
     public function favorite()
     {
         $attribute = ['user_id' => auth()->id()];

@@ -9,21 +9,11 @@
 			</h4>
 		</div>
 
-		@foreach($threads as $thread)
-		<div class="panel panel-default">
-            <div class="panel-heading">
-            	<div class="level">
-                	<span class="flex"><a href="#">{{ $thread->creator->name }}</a> posted <a href="{{ $thread->path() }}">{{ $thread->title }}</a></span>
-            		<span>{{ $thread->created_at->diffForHumans() }}</span>
-            	</div>
-            </div>
-
-            <div class="panel-body">
-                {{ $thread->body }}
-            </div>
-        </div>
+        @foreach($activitiesGroupByDay as $day => $activities)
+            <h4 class="page-header">{{ $day }}</h4>
+    		@foreach($activities as $activity)
+                @include("profile.activities.{$activity->type}")
+            @endforeach
         @endforeach
-
-        {{ $threads->links() }}
 	</div>
 @endsection
