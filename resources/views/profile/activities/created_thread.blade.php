@@ -1,6 +1,6 @@
 @component('profile.activities.activity')
 	@slot('heading')
-	{{ $profileUser->name }} created thread <a href="{{ $activity->subject->path() }}">"{{ $activity->subject->body }}"</a>
+	{{ $profileUser->name }} created thread <a href="{{ $activity->subject->path() }}">"{{ $activity->subject->title }}"</a>
 	@endslot
 
 	@slot('body')
