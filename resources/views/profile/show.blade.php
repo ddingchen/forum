@@ -12,7 +12,9 @@
         @foreach($activitiesGroupByDay as $day => $activities)
             <h4 class="page-header">{{ $day }}</h4>
     		@foreach($activities as $activity)
-                @include("profile.activities.{$activity->type}")
+    			@if(view()->exists("profile.activities.{$activity->type}"))
+                	@include("profile.activities.{$activity->type}")
+                @endif
             @endforeach
         @endforeach
 	</div>
