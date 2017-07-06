@@ -24,6 +24,8 @@
         #app { padding-bottom: 50px }
         .level { display: flex; align-items: center }
         .flex { flex-grow: 1 }
+        .mr { margin-right: 1em }
+        [v-cloak] {display: none;}
     </style>
 </head>
 <body>

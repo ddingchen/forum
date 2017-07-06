@@ -24,9 +24,16 @@ class ReplyController extends Controller
         return back()->with('flash', 'Replied');
     }
 
+    public function update(Reply $reply)
+    {
+        $this->authorize('update', $reply);
+
+        $reply->update(request(['body']));
+    }
+
     public function destroy(Reply $reply)
     {
-        $this->authorize('delete', $reply);
+        $this->authorize('update', $reply);
 
         $reply->delete();
         return back();
