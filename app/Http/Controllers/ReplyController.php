@@ -36,6 +36,10 @@ class ReplyController extends Controller
         $this->authorize('update', $reply);
 
         $reply->delete();
+
+        if (request()->wantsJson()) {
+            return response([], 204);
+        }
         return back();
     }
 }
