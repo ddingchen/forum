@@ -12,6 +12,8 @@ class Reply extends Model
 
     protected $with = ['owner', 'favorites'];
 
+    protected $appends = ['favoritesCount', 'isFavorited'];
+
     public function owner()
     {
         return $this->belongsTo('App\User', 'user_id');
@@ -36,9 +38,21 @@ class Reply extends Model
         }
     }
 
+    public function unfavorite()
+    {
+        $attribute = ['user_id' => auth()->id()];
+
+        $this->favorites()->where($attribute)->delete();
+    }
+
     public function isFavorited()
     {
         return !!$this->favorites->where('user_id', auth()->id())->count();
+    }
+
+    public function getIsFavoritedAttribute()
+    {
+        return $this->isFavorited();
     }
 
     public function getFavoritesCountAttribute()
