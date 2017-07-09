@@ -5,11 +5,9 @@
             	<h5 class="flex">
             		<a href="{{ route('profile', $reply->owner->name) }}">{{ $reply->owner->name }}</a> said {{ $reply->created_at->diffForHumans() }}
             	</h5>
-                <favorite :reply="{{ $reply }}"></favorite>
-            	{{-- <form method="post" action="/reply/{{ $reply->id }}/favorites">
-            		{{ csrf_field() }}
-        			<button class="btn btn-default" {{ $reply->isFavorited()?'disabled':'' }} >{{ $reply->favorites_count }} {{ str_plural('favorite', $reply->favorites_count) }}</button>
-            	</form> --}}
+                @if(Auth::check())
+                    <favorite :reply="{{ $reply }}"></favorite>
+                @endif
         	</div>
         </div>
 
