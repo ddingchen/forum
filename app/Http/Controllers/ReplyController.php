@@ -16,10 +16,14 @@ class ReplyController extends Controller
     {
         $this->validate(request(), ['body' => 'required']);
 
-        $thread->replies()->create([
+        $reply = $thread->replies()->create([
             'body' => request('body'),
             'user_id' => auth()->id(),
         ]);
+
+        if (request()->wantsJson()) {
+            return $reply->load('owner');
+        }
 
         return back()->with('flash', 'Replied');
     }

@@ -8,6 +8,9 @@
 			return {
 				count: this.initRepliesCount
 			}
+		},
+		methods: {
+			
 		}
 	}
 </script>
