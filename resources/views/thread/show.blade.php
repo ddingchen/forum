@@ -27,9 +27,9 @@
                     </div>
                 </div>
 
-                <replies :replies="{{ $thread->replies }}" @removed="count--" @created="count++"></replies>
+                <replies @removed="count--" @created="count++"></replies>
 
-                {{ $replies->links() }}
+                {{-- {{ $replies->links() }} --}}
 
                 {{-- @if(Auth::check())
                     <form method="post" action="{{ $thread->path() }}/reply">

@@ -854,6 +854,7 @@ window.flash = function (message) {
  */
 
 Vue.component('flash', __webpack_require__(43));
+Vue.component('paginator', __webpack_require__(68));
 Vue.component('thread-view', __webpack_require__(47));
 
 var app = new Vue({
@@ -1876,6 +1877,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Reply_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__Reply_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_NewReply_vue__ = __webpack_require__(44);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_NewReply_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__components_NewReply_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mixins_collection__ = __webpack_require__(66);
 //
 //
 //
@@ -1886,29 +1888,41 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+
 
 
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-	props: ['replies'],
+	// props: ['replies'],
 	components: { Reply: __WEBPACK_IMPORTED_MODULE_0__Reply_vue___default.a, NewReply: __WEBPACK_IMPORTED_MODULE_1__components_NewReply_vue___default.a },
 	data: function data() {
 		return {
-			items: this.replies
+			dataSet: []
 		};
 	},
 
+	mixins: [__WEBPACK_IMPORTED_MODULE_2__mixins_collection__["a" /* default */]],
+	created: function created() {
+		this.fetch();
+	},
+
 	methods: {
-		deleteReply: function deleteReply(index) {
-			this.items.splice(index, 1);
-			this.$emit('removed');
-			flash('Reply has been removed!');
+		fetch: function fetch(page) {
+			axios.get(this.url(page)).then(this.refresh);
 		},
-		newReply: function newReply(reply) {
-			this.items.push(reply);
-			this.$emit('created');
-			flash('New reply created!');
+		url: function url(page) {
+			if (!page) {
+				var query = location.search.match(/page=(\d)/);
+				page = query ? query[1] : 1;
+			}
+			return window.location.pathname + '/reply?page=' + page;
+		},
+		refresh: function refresh(res) {
+			this.dataSet = res.data;
+			this.items = res.data.data;
 		}
 	}
 });
@@ -32459,13 +32473,20 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       },
       on: {
         "deleted": function($event) {
-          _vm.deleteReply(index)
+          _vm.remove(index)
         }
       }
     })], 1)
+  }), _vm._v(" "), _c('paginator', {
+    attrs: {
+      "dataSet": _vm.dataSet
+    },
+    on: {
+      "update": _vm.fetch
+    }
   }), _vm._v(" "), _c('new-reply', {
     on: {
-      "new": _vm.newReply
+      "new": _vm.add
     }
   })], 2)
 },staticRenderFns: []}
@@ -42491,6 +42512,199 @@ module.exports = function(module) {
 __webpack_require__(9);
 module.exports = __webpack_require__(10);
 
+
+/***/ }),
+/* 59 */,
+/* 60 */,
+/* 61 */,
+/* 62 */,
+/* 63 */,
+/* 64 */,
+/* 65 */,
+/* 66 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony default export */ __webpack_exports__["a"] = ({
+	data: function data() {
+		return {
+			items: []
+		};
+	},
+
+	methods: {
+		remove: function remove(index) {
+			this.items.splice(index, 1);
+			this.$emit('removed');
+			flash('Reply has been removed!');
+		},
+		add: function add(reply) {
+			this.items.push(reply);
+			this.$emit('created');
+			flash('New reply created!');
+		}
+	}
+});
+
+/***/ }),
+/* 67 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+	props: ['dataSet'],
+	data: function data() {
+		return {
+			prevUrl: false,
+			nextUrl: false,
+			page: 1
+		};
+	},
+
+	computed: {
+		shouldPaginate: function shouldPaginate() {
+			return !!(this.prevUrl || this.nextUrl);
+		}
+	},
+	watch: {
+		dataSet: function dataSet() {
+			this.page = this.dataSet.current_page;
+			this.prevUrl = this.dataSet.prev_page_url;
+			this.nextUrl = this.dataSet.next_page_url;
+		},
+		page: function page() {
+			this.boardcast().updateUrl();
+		}
+	},
+	methods: {
+		boardcast: function boardcast() {
+			return this.$emit('update', this.page);
+		},
+		updateUrl: function updateUrl() {
+			history.pushState(null, null, '?page=' + this.page);
+		}
+	}
+});
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(67),
+  /* template */
+  __webpack_require__(69),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "/Users/dc/Documents/Sites/forum/resources/assets/js/components/Paginator.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] Paginator.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-608f05d0", Component.options)
+  } else {
+    hotAPI.reload("data-v-608f05d0", Component.options)
+  }
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return (_vm.shouldPaginate) ? _c('nav', {
+    attrs: {
+      "aria-label": "Page navigation"
+    }
+  }, [_c('ul', {
+    staticClass: "pagination"
+  }, [_c('li', {
+    directives: [{
+      name: "show",
+      rawName: "v-show",
+      value: (_vm.prevUrl),
+      expression: "prevUrl"
+    }]
+  }, [_c('a', {
+    attrs: {
+      "href": "#",
+      "aria-label": "Previous",
+      "rel": "prev"
+    },
+    on: {
+      "click": function($event) {
+        $event.preventDefault();
+        _vm.page--
+      }
+    }
+  }, [_c('span', {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_vm._v("« Previous")])])]), _vm._v(" "), _c('li', {
+    directives: [{
+      name: "show",
+      rawName: "v-show",
+      value: (_vm.nextUrl),
+      expression: "nextUrl"
+    }]
+  }, [_c('a', {
+    attrs: {
+      "href": "#",
+      "aria-label": "Next",
+      "rel": "next"
+    },
+    on: {
+      "click": function($event) {
+        $event.preventDefault();
+        _vm.page++
+      }
+    }
+  }, [_c('span', {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_vm._v("Next »")])])])])]) : _vm._e()
+},staticRenderFns: []}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-608f05d0", module.exports)
+  }
+}
 
 /***/ })
 /******/ ]);
