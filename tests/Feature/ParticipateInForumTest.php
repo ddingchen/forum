@@ -19,8 +19,8 @@ class ParticipateInForumTest extends TestCase
         $thread = create('App\Thread');
         $reply = make('App\Reply');
         $this->post($thread->path() . '/reply', $reply->toArray());
-        $this->get($thread->path())
-            ->assertSee($reply->body);
+        $this->assertDatabaseHas('replies', ['body' => $reply->body]);
+        $this->assertEquals(1, $thread->fresh()->replies_count);
     }
 
     public function test_a_reply_requires_body()
@@ -51,6 +51,7 @@ class ParticipateInForumTest extends TestCase
 
         $this->delete("reply/{$reply->id}");
         $this->assertDatabaseMissing('replies', ['id' => $reply->id]);
+        $this->assertEquals(0, $reply->thread->fresh()->replies_count);
     }
 
     public function test_unauthorized_user_may_not_update_reply()

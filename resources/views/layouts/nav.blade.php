@@ -23,6 +23,7 @@
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Browse <span class="caret"></span></a>
                   <ul class="dropdown-menu">
                    <li><a href="/thread">All Threads</a></li>
+                   <li><a href="/thread?unanswered=1">Unanswered Threads</a></li>
                    @if(auth()->check())
                    <li><a href="/thread?by={{ auth()->user()->name }}">My Threads</a></li>
                    @endif
