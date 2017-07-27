@@ -26,6 +26,9 @@ Route::delete('thread/{channel}/{thread}', 'ThreadController@destroy');
 
 Route::get('thread/{channel}/{thread}/reply', 'ReplyController@index');
 Route::post('thread/{channel}/{thread}/reply', 'ReplyController@store');
+
+Route::post('thread/{channel}/{thread}/subscription', 'ThreadSubscriptionController@store')->middleware('auth');
+
 Route::delete('reply/{reply}', 'ReplyController@destroy');
 Route::patch('reply/{reply}', 'ReplyController@update');
 
