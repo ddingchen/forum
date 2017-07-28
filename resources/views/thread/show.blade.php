@@ -47,7 +47,12 @@
             <div class="col-md-4">
                 <div class="panel panel-default">
                     <div class="panel-body">
-                        The thread was published {{ $thread->created_at->diffForHumans() }} by {{ $thread->creator->name }} and currently has @{{ this.count }} {{ str_plural('comment', $thread->replies_count) }}.
+                        <p>
+                            The thread was published {{ $thread->created_at->diffForHumans() }} by {{ $thread->creator->name }} and currently has @{{ this.count }} {{ str_plural('comment', $thread->replies_count) }}.
+                        </p>
+                        <p>
+                            <subscribe-button :actived="{{ json_encode($thread->isSubscribedTo) }}"></subscribe-button>
+                        </p>
                     </div>
                 </div>
             </div>

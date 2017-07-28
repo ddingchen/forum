@@ -78,4 +78,11 @@ class Thread extends Model
     {
         return $this->hasMany('App\ThreadSubscription');
     }
+
+    public function getIsSubscribedToAttribute()
+    {
+        return $this->subscriptions()
+            ->where('user_id', auth()->id())
+            ->exists();
+    }
 }
