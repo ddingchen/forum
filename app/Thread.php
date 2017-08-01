@@ -34,6 +34,17 @@ class Thread extends Model
         return $this->hasMany('App\Reply');
     }
 
+    public function addReply($reply)
+    {
+        $reply = $this->replies()->create($reply);
+
+        $this->subscriptions->filter(function ($sub) use ($reply) {
+            return $sub->user->id != $reply->owner->id;
+        })->each->notify($reply);
+
+        return $reply;
+    }
+
     public function creator()
     {
         return $this->belongsTo('App\User', 'user_id');
@@ -65,6 +76,8 @@ class Thread extends Model
         $this->subscriptions()->create([
             'user_id' => $userId ?: auth()->id(),
         ]);
+
+        return $this;
     }
 
     public function unsubscribe($userId = null)
