@@ -2,13 +2,20 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Notifications\DatabaseNotification;
 use Tests\TestCase;
 
 class NotificationsTest extends TestCase
 {
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->signIn();
+    }
+
     public function test_a_notification_is_prepared_when_a_subscribed_thread_receives_a_new_reply()
     {
-        $this->signIn();
 
         $thread = create('App\Thread')->subscribe();
 
@@ -29,40 +36,29 @@ class NotificationsTest extends TestCase
 
     public function test_a_user_can_fetch_unread_notifications()
     {
-        $this->signIn();
-        $user = auth()->user();
+        create(DatabaseNotification::class);
 
-        $thread = create('App\Thread')->subscribe();
-
-        $thread->addReply([
-            'user_id' => create('App\User')->id,
-            'body' => 'Some reply here.',
-        ]);
-
-        $response = $this->getJson("profile/{$user->name}/subscription")->json();
-
-        $this->assertCount(1, $response);
+        $this->assertCount(
+            1, 
+            $this->getJson("profile/" . auth()->user() . "/subscription")->json()
+        );
     }
 
     public function test_a_user_can_mark_a_notification_as_read()
     {
-        $this->signIn();
+        create(DatabaseNotification::class);
 
-        $thread = create('App\Thread')->subscribe();
+        tap(auth()->user(), function($user) {
 
-        $thread->addReply([
-            'user_id' => create('App\User')->id,
-            'body' => 'Some reply here.',
-        ]);
+            $this->assertCount(1, $user->unreadNotifications);
 
-        $user = auth()->user();
+            $subscriptionId = $user->unreadNotifications()->first()->id;
 
-        $this->assertCount(1, $user->unreadNotifications);
+            $this->delete("profile/{$user->name}/subscription/{$subscriptionId}");
 
-        $subscriptionId = $user->unreadNotifications()->first()->id;
+            $this->assertCount(0, $user->fresh()->unreadNotifications);
 
-        $this->delete("profile/{$user->name}/subscription/{$subscriptionId}");
+        });
 
-        $this->assertCount(0, $user->fresh()->unreadNotifications);
     }
 }
