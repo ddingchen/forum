@@ -26,6 +26,7 @@ window.flash = function(message) {
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+Vue.component('user-notification', require('./components/UserNotification.vue'));
 Vue.component('flash', require('./components/Flash.vue'));
 Vue.component('paginator', require('./components/Paginator.vue'));
 Vue.component('subscribe-button', require('./components/SubscribeButton.vue'));
