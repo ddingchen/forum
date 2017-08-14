@@ -2,10 +2,13 @@
 
 namespace Tests\Unit;
 
+use App\Notifications\ThreadWasUpdated;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class ThreadTest extends TestCase
 {
+
     public function setup()
     {
         parent::setup();
@@ -21,6 +24,31 @@ class ThreadTest extends TestCase
     public function test_a_thread_can_have_replies()
     {
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $this->thread->replies);
+    }
+
+    public function test_a_thread_can_add_a_reply()
+    {
+        $this->thread->addReply([
+            'body' => 'new reply',
+            'user_id' => 1
+        ]);
+
+        $this->assertCount(1, $this->thread->replies);
+    }
+
+    public function test_a_thread_notifies_all_subscribers_when_a_reply_is_added()
+    {
+        Notification::fake();
+
+        $this->signIn()
+            ->thread
+            ->subscribe()
+            ->addReply([
+                'body' => 'new reply',
+                'user_id' => 1
+            ]);
+
+        Notification::assertSentTo(auth()->user(), ThreadWasUpdated::class);
     }
 
     public function test_a_thread_belongs_to_a_channel()
