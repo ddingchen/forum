@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Events\ThreadHasNewReply;
 use App\Filters\ThreadFilter;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,9 +39,7 @@ class Thread extends Model
     {
         $reply = $this->replies()->create($reply);
 
-        $this->subscriptions->filter(function ($sub) use ($reply) {
-            return $sub->user->id != $reply->owner->id;
-        })->each->notify($reply);
+        event(new ThreadHasNewReply($this, $reply));
 
         return $reply;
     }
@@ -90,6 +89,15 @@ class Thread extends Model
     public function subscriptions()
     {
         return $this->hasMany('App\ThreadSubscription');
+    }
+
+    public function notifySubscribers($reply)
+    {
+        $this->subscriptions()
+            ->where('user_id', '<>',  $reply->owner->id)
+            ->get()
+            ->each
+            ->notify($reply);
     }
 
     public function getIsSubscribedToAttribute()
