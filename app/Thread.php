@@ -94,7 +94,7 @@ class Thread extends Model
     public function notifySubscribers($reply)
     {
         $this->subscriptions()
-            ->where('user_id', '<>',  $reply->owner->id)
+            ->where('user_id', '<>', $reply->owner->id)
             ->get()
             ->each
             ->notify($reply);

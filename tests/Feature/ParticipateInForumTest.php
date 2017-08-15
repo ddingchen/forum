@@ -77,4 +77,18 @@ class ParticipateInForumTest extends TestCase
             'body' => 'This was updated, foolish!',
         ]);
     }
+
+    public function test_replies_that_contains_spam_cannot_be_created()
+    {
+        $this->expectException(\Exception::class);
+
+        $this->signIn();
+        $thread = create('App\Thread');
+        $reply = $thread->addReply([
+            'body' => 'yahoo customer Support.',
+            'user_id' => auth()->id(),
+        ]);
+
+        $this->post($thread->path() . '/reply', $reply->toArray());
+    }
 }
