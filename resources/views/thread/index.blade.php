@@ -8,7 +8,13 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="level">
-                        <a href="{{ $thread->path() }}" class="flex"><h4>{{ $thread->title }}</h4></a>
+                        <a href="{{ $thread->path() }}" class="flex"><h4>
+                            @if(Auth::check() && $thread->hasUpdatesFor())
+                                <strong>{{ $thread->title }}</strong>
+                            @else
+                                {{ $thread->title }}
+                            @endif
+                        </h4></a>
                         <a href="{{ $thread->path() }}">{{ $thread->replies_count }} {{ str_plural('reply', $thread->replies_count) }}</a>
                     </div>
                 </div>
