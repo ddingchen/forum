@@ -44,6 +44,8 @@
 				}).then(({ data }) => {
 					this.body = ''
 					this.$emit('new', data)
+				}).catch(({ response }) => {
+					flash(response.data, 'danger')
 				})
 			}
 		}

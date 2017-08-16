@@ -20,18 +20,18 @@
 				notifications: false
 			};
 		},
-		computed: [
+		computed: {
 			endPoint() {
 				return "/profile/" + window.App.user.name + "/subscription/"
 			}
-		],
+		},
 		created() {
 			axios.get(this.endPoint)
 				.then(response => this.notifications = response.data)
 		},
 		methods: {
 			markAsRead(notification) {
-				axios.delete(this.this.endPoint + notification.id`)
+				axios.delete(this.this.endPoint + notification.id)
 			}
 		}
 	}

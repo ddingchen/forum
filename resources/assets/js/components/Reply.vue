@@ -53,10 +53,12 @@
 			update() {
 				axios.patch(`/reply/${this.attributes.id}`, {
 					body: this.body
+				}).then(() => {
+					this.editing = false
+					flash('Reply has been updated!')
+				}).catch(({ response }) => {
+					flash(response.data, 'danger')
 				})
-
-				this.editing = false
-				flash('Reply has been updated!')
 			},
 			destroy() {
 				axios.delete(`/reply/${this.attributes.id}`)

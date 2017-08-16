@@ -18,31 +18,40 @@ class ReplyController extends Controller
         return $thread->replies()->paginate(10);
     }
 
-    public function store($channelId, Thread $thread, Spam $spam)
+    public function store($channelId, Thread $thread)
     {
-        $this->validate(request(), ['body' => 'required']);
-        $spam->detect(request('body'));
+        try {
+            $this->validateReply();
 
-        $reply = $thread->addReply([
-            'body' => request('body'),
-            'user_id' => auth()->id(),
-        ]);
-
-        if (request()->wantsJson()) {
-            return $reply->load('owner');
+            $reply = $thread->addReply([
+                'body' => request('body'),
+                'user_id' => auth()->id(),
+            ]);
+        } catch (\Exception $e) {
+            return response('Sorry, your reply could not be saved at this time.', 422);
         }
 
-        return back()->with('flash', 'Replied');
+        return $reply->load('owner');
+
     }
 
-    public function update(Reply $reply, Spam $spam)
+    public function update(Reply $reply)
     {
         $this->authorize('update', $reply);
 
-        $this->validate(request(), ['body' => 'required']);
-        $spam->detect(request('body'));
+        try {
+            $this->validateReply();
 
-        $reply->update(request(['body']));
+            $reply->update(request(['body']));
+        } catch (\Exception $e) {
+            return response('Sorry, your reply could not be saved at this time.', 422);
+        }
+    }
+
+    private function validateReply()
+    {
+        $this->validate(request(), ['body' => 'required']);
+        app(Spam::class)->detect(request('body'));
     }
 
     public function destroy(Reply $reply)

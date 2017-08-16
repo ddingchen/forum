@@ -844,7 +844,9 @@ Vue.prototype.authorize = function (handle) {
 window.events = new Vue();
 
 window.flash = function (message) {
-  window.events.$emit('flash', message);
+  var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'success';
+
+  window.events.$emit('flash', { message: message, level: level });
 };
 
 /**
@@ -1770,13 +1772,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     props: ['message'],
     data: function data() {
         return {
             body: '',
-            show: false
+            show: false,
+            level: 'success'
         };
     },
     created: function created() {
@@ -1784,16 +1789,20 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
         if (this.message) {
             this.flash(this.message);
-
-            window.events.$on('flash', function (message) {
-                return _this.flash(message);
-            });
         }
+        window.events.$on('flash', function (_ref) {
+            var message = _ref.message,
+                level = _ref.level;
+            return _this.flash(message, level);
+        });
     },
 
     methods: {
         flash: function flash(message) {
-            this.body = this.message;
+            var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'success';
+
+            this.body = message;
+            this.level = level;
             this.show = true;
             this.hide();
         },
@@ -1864,6 +1873,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 				_this.body = '';
 				_this.$emit('new', data);
+			}).catch(function (_ref2) {
+				var response = _ref2.response;
+
+				flash(response.data, 'danger');
 			});
 		}
 	}
@@ -2053,12 +2066,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 	},
 	methods: {
 		update: function update() {
+			var _this2 = this;
+
 			axios.patch('/reply/' + this.attributes.id, {
 				body: this.body
-			});
+			}).then(function () {
+				_this2.editing = false;
+				flash('Reply has been updated!');
+			}).catch(function (_ref) {
+				var response = _ref.response;
 
-			this.editing = false;
-			flash('Reply has been updated!');
+				flash(response.data, 'danger');
+			});
 		},
 		destroy: function destroy() {
 			axios.delete('/reply/' + this.attributes.id);
@@ -2121,24 +2140,32 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
 	data: function data() {
 		return {
-			notifications: []
+			notifications: false
 		};
+	},
+
+	computed: {
+		endPoint: function endPoint() {
+			return "/profile/" + window.App.user.name + "/subscription/";
+		}
 	},
 	created: function created() {
 		var _this = this;
 
-		axios.get("/profile/" + window.App.user.name + "/subscription").then(function (response) {
+		axios.get(this.endPoint).then(function (response) {
 			return _this.notifications = response.data;
 		});
 	},
 
 	methods: {
 		markAsRead: function markAsRead(notification) {
-			axios.delete("/profile/" + window.App.user.name + "/subscription/" + notification.id);
+			axios.delete(this.this.endPoint + notification.id);
 		}
 	}
 });
@@ -32572,7 +32599,8 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       value: (this.show),
       expression: "this.show"
     }],
-    staticClass: "alert alert-success alert-message",
+    staticClass: "alert alert-message",
+    class: 'alert-' + this.level,
     attrs: {
       "role": "alert"
     }
