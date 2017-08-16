@@ -61,8 +61,8 @@ class ThreadController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'title' => 'required',
-            'body' => 'required',
+            'title' => 'required|spam',
+            'body' => 'required|spam',
             'channel_id' => 'required|exists:channels,id',
         ]);
 

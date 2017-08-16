@@ -2,7 +2,7 @@
     <div class="alert alert-message" role="alert" 
         :class="'alert-'+this.level"
         v-show="this.show">
-        Success! {{ body }}
+        {{ this.levelTitle }}! {{ body }}
     </div>
 </template>
 
@@ -14,6 +14,14 @@
                 body: '',
                 show: false,
                 level: 'success'
+            }
+        },
+        computed: {
+            levelTitle() {
+                switch(this.level) {
+                    case 'success': return 'Success'
+                    case 'danger': return 'Failed'
+                }
             }
         },
         created() {

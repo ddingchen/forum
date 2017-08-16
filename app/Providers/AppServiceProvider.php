@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Channel;
 use Cache;
 use Illuminate\Support\ServiceProvider;
+use Validator;
 use View;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
             });
             $view->with('channels', $channels);
         });
+
+        Validator::extend('spam', 'App\Rules\SpamRule@passes');
     }
 
     /**

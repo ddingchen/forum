@@ -57,7 +57,7 @@
 					this.editing = false
 					flash('Reply has been updated!')
 				}).catch(({ response }) => {
-					flash(response.data, 'danger')
+					flash(response.data.body[0], 'danger')
 				})
 			},
 			destroy() {

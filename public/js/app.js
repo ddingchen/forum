@@ -1784,6 +1784,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             level: 'success'
         };
     },
+
+    computed: {
+        levelTitle: function levelTitle() {
+            switch (this.level) {
+                case 'success':
+                    return 'Success';
+                case 'danger':
+                    return 'Failed';
+            }
+        }
+    },
     created: function created() {
         var _this = this;
 
@@ -1876,7 +1887,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			}).catch(function (_ref2) {
 				var response = _ref2.response;
 
-				flash(response.data, 'danger');
+				flash(response.data.body[0], 'danger');
 			});
 		}
 	}
@@ -2076,7 +2087,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			}).catch(function (_ref) {
 				var response = _ref.response;
 
-				flash(response.data, 'danger');
+				flash(response.data.body[0], 'danger');
 			});
 		},
 		destroy: function destroy() {
@@ -32604,7 +32615,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     attrs: {
       "role": "alert"
     }
-  }, [_vm._v("\n    Success! " + _vm._s(_vm.body) + "\n")])
+  }, [_vm._v("\n    " + _vm._s(this.levelTitle) + "! " + _vm._s(_vm.body) + "\n")])
 },staticRenderFns: []}
 module.exports.render._withStripped = true
 if (false) {
