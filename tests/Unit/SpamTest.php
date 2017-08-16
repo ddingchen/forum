@@ -2,15 +2,28 @@
 
 namespace Tests\Unit;
 
-use App\Spam;
+use App\Inspections\Spam;
 use Tests\TestCase;
 
 class SpamTest extends TestCase
 {
-    public function test_it_validates_spam()
+    public function setUp()
     {
-        $spam = new Spam();
+        parent::setUp();
 
-        $this->assertFalse($spam->detect('Innocent reply here.'));
+        $this->spam = new Spam();
+    }
+
+    public function test_it_checks_for_invalid_keywords()
+    {
+        $this->assertFalse($this->spam->detect('Innocent reply here.'));
+        $this->expectException(\Exception::class);
+        $this->spam->detect('yahoo customer support');
+    }
+
+    public function test_it_checks_for_keys_being_held_dowm()
+    {
+        $this->expectException(\Exception::class);
+        $this->spam->detect('aaaaaaaaa');
     }
 }
