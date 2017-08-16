@@ -10,8 +10,8 @@ class KeyHeldDown
 
     public function detect($content)
     {
-        if (preg_match('/(.){4,}/', $content)) {
-            throw new \Exception;
+        if (preg_match('/(.)\1{4,}/', $content)) {
+            throw new \Exception('Key held down.');
         }
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Inspections\Spam;
 use App\Reply;
-use App\Spam;
 use App\Thread;
 
 class ReplyController extends Controller
@@ -15,7 +15,7 @@ class ReplyController extends Controller
 
     public function index($channelId, Thread $thread)
     {
-        return $thread->replies()->paginate(1);
+        return $thread->replies()->paginate(10);
     }
 
     public function store($channelId, Thread $thread, Spam $spam)
@@ -35,9 +35,12 @@ class ReplyController extends Controller
         return back()->with('flash', 'Replied');
     }
 
-    public function update(Reply $reply)
+    public function update(Reply $reply, Spam $spam)
     {
         $this->authorize('update', $reply);
+
+        $this->validate(request(), ['body' => 'required']);
+        $spam->detect(request('body'));
 
         $reply->update(request(['body']));
     }

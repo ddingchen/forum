@@ -16,7 +16,7 @@ class InvalidKeywords
     {
         foreach ($this->keywords as $keyword) {
             if (stripos($content, $keyword) !== false) {
-                throw new \Exception;
+                throw new \Exception('Invalid keyword input.');
             }
         }
     }
