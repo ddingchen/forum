@@ -1887,7 +1887,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			}).catch(function (_ref2) {
 				var response = _ref2.response;
 
-				flash(response.data.body[0], 'danger');
+				flash(response.data, 'danger');
 			});
 		}
 	}
@@ -2087,7 +2087,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			}).catch(function (_ref) {
 				var response = _ref.response;
 
-				flash(response.data.body[0], 'danger');
+				flash(response.data, 'danger');
 			});
 		},
 		destroy: function destroy() {

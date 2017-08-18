@@ -43,7 +43,12 @@ class User extends Authenticatable
         return $this->hasMany('App\Activity');
     }
 
-    public function read($thread) 
+    public function lastReply()
+    {
+        return $this->hasOne('App\Reply')->latest();
+    }
+
+    public function read($thread)
     {
         cache()->forever($this->visitedThreadCacheKey($thread), Carbon::now());
     }

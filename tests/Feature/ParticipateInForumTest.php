@@ -80,15 +80,29 @@ class ParticipateInForumTest extends TestCase
 
     public function test_replies_that_contains_spam_cannot_be_created()
     {
-        $this->expectException(\Exception::class);
-
         $this->signIn();
         $thread = create('App\Thread');
-        $reply = $thread->addReply([
-            'body' => 'yahoo customer Support.',
+        $reply = make('App\Reply', [
+            'body' => 'aaaaaaaa',
+        ]);
+
+        $this->post($thread->path() . '/reply', $reply->toArray())
+            ->assertStatus(422);
+    }
+
+    public function test_users_may_only_reply_a_maximum_of_once_per_minute()
+    {
+        $this->signIn();
+        $thread = create('App\Thread');
+        $reply = make('App\Reply', [
+            'body' => 'New reply leave.',
             'user_id' => auth()->id(),
         ]);
 
-        $this->post($thread->path() . '/reply', $reply->toArray());
+        $this->post($thread->path() . '/reply', $reply->toArray())
+            ->assertStatus(200);
+        $this->post($thread->path() . '/reply', $reply->toArray())
+            ->assertStatus(422);
+
     }
 }

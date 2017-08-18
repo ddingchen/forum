@@ -19,22 +19,29 @@ class ReplyController extends Controller
 
     public function store($channelId, Thread $thread)
     {
-        $this->validate(request(), ['body' => 'required|spam']);
+        try {
+            $this->authorize('create', new Reply);
+            $this->validate(request(), ['body' => 'required|spam']);
 
-        $reply = $thread->addReply([
-            'body' => request('body'),
-            'user_id' => auth()->id(),
-        ]);
+            $reply = $thread->addReply([
+                'body' => request('body'),
+                'user_id' => auth()->id(),
+            ]);
+        } catch (\Exception $e) {
+            return response('Sorry, your reply could not be saved at this time.', 422);
+        }
 
         return $reply->load('owner');
-
     }
 
     public function update(Reply $reply)
     {
-        $this->authorize('update', $reply);
-
-        $this->validate(request(), ['body' => 'required|spam']);
+        try {
+            $this->authorize('update', $reply);
+            $this->validate(request(), ['body' => 'required|spam']);
+        } catch (\Exception $e) {
+            return response('Sorry, your reply could not be saved at this time.', 422);
+        }
 
         $reply->update(request(['body']));
     }
