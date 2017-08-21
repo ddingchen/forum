@@ -56,13 +56,11 @@ class ParticipateInForumTest extends TestCase
 
     public function test_unauthorized_user_may_not_update_reply()
     {
-        $this->withExceptionHandling();
-
         $reply = create('App\Reply');
 
         $this->signIn()
             ->patch("reply/{$reply->id}", ['body' => 'This was updated, foolish!'])
-            ->assertStatus(403);
+            ->assertStatus(422);
     }
 
     public function test_an_authorized_user_can_update_reply()
@@ -80,19 +78,19 @@ class ParticipateInForumTest extends TestCase
 
     public function test_replies_that_contains_spam_cannot_be_created()
     {
-        $this->signIn();
+        $this->withExceptionHandling()->signIn();
         $thread = create('App\Thread');
         $reply = make('App\Reply', [
             'body' => 'aaaaaaaa',
         ]);
 
-        $this->post($thread->path() . '/reply', $reply->toArray())
+        $this->json('post', $thread->path() . '/reply', $reply->toArray())
             ->assertStatus(422);
     }
 
     public function test_users_may_only_reply_a_maximum_of_once_per_minute()
     {
-        $this->signIn();
+        $this->withExceptionHandling()->signIn();
         $thread = create('App\Thread');
         $reply = make('App\Reply', [
             'body' => 'New reply leave.',
@@ -102,7 +100,7 @@ class ParticipateInForumTest extends TestCase
         $this->post($thread->path() . '/reply', $reply->toArray())
             ->assertStatus(200);
         $this->post($thread->path() . '/reply', $reply->toArray())
-            ->assertStatus(422);
+            ->assertStatus(429);
 
     }
 }

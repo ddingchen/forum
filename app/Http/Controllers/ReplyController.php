@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateReplyRequest;
 use App\Reply;
 use App\Thread;
 
@@ -17,21 +18,9 @@ class ReplyController extends Controller
         return $thread->replies()->paginate(10);
     }
 
-    public function store($channelId, Thread $thread)
+    public function store($channelId, Thread $thread, CreateReplyRequest $form)
     {
-        try {
-            $this->authorize('create', new Reply);
-            $this->validate(request(), ['body' => 'required|spam']);
-
-            $reply = $thread->addReply([
-                'body' => request('body'),
-                'user_id' => auth()->id(),
-            ]);
-        } catch (\Exception $e) {
-            return response('Sorry, your reply could not be saved at this time.', 422);
-        }
-
-        return $reply->load('owner');
+        return $form->persist($thread);
     }
 
     public function update(Reply $reply)
