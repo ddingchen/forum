@@ -2,12 +2,9 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class ThreadHasNewReply
+class ThreadReceivesNewReply
 {
     public $thread;
 
