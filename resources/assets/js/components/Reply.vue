@@ -13,17 +13,19 @@
 
         <div class="panel-body">
             <div v-if="editing">
-                <div class="form-group">
-                    <textarea class="form-control" v-model="body"></textarea>
-                </div>
-                <button class="btn btn-primary btn-xs" @click="update">Confirm</button>
-                <button class="btn btn-link btn-xs" @click="editing = false">Cancel</button>
+            	<form @submit="update">
+	                <div class="form-group">
+	                    <textarea class="form-control" v-model="body" required></textarea>
+	                </div>
+	                <button class="btn btn-primary btn-xs">Confirm</button>
+	                <button class="btn btn-link btn-xs" type="button" @click="cancel">Cancel</button>
+                </form>
             </div>
             <div v-else v-text="body"></div>
         </div>
 
         <div v-if="canUpdate" class="panel-footer level">
-            <button class="btn btn-default btn-xs mr" @click="editing = true">Edit</button>
+            <button class="btn btn-default btn-xs mr" @click="edit">Edit</button>
             <button class="btn btn-default btn-xs mr" @click="destroy">Delete</button>
         </div>
     </div>
@@ -38,7 +40,8 @@
 		data: function() {
 			return {
 				editing: false,
-				body: this.attributes.body
+				body: this.attributes.body,
+				oldBody: ''
 			}
 		},
 		computed: {
@@ -50,6 +53,10 @@
 			}
 		},
 		methods: {
+			edit() {
+				this.oldBody = this.body
+				this.editing = true
+			},
 			update() {
 				axios.patch(`/reply/${this.attributes.id}`, {
 					body: this.body
@@ -59,6 +66,10 @@
 				}).catch(({ response }) => {
 					flash(response.data, 'danger')
 				})
+			},
+			cancel() {
+				this.body = this.oldBody
+				this.editing = false
 			},
 			destroy() {
 				axios.delete(`/reply/${this.attributes.id}`)

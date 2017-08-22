@@ -2051,6 +2051,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 
 
@@ -2060,7 +2062,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 	data: function data() {
 		return {
 			editing: false,
-			body: this.attributes.body
+			body: this.attributes.body,
+			oldBody: ''
 		};
 	},
 	computed: {
@@ -2076,6 +2079,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 		}
 	},
 	methods: {
+		edit: function edit() {
+			this.oldBody = this.body;
+			this.editing = true;
+		},
 		update: function update() {
 			var _this2 = this;
 
@@ -2089,6 +2096,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 				flash(response.data, 'danger');
 			});
+		},
+		cancel: function cancel() {
+			this.body = this.oldBody;
+			this.editing = false;
 		},
 		destroy: function destroy() {
 			axios.delete('/reply/' + this.attributes.id);
@@ -32735,13 +32746,17 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     domProps: {
       "textContent": _vm._s(this.attributes.owner.name)
     }
-  }), _vm._v(" said " + _vm._s(this.attributes.created_at) + "\n        \t")]), _vm._v(" "), (_vm.signedIn) ? _c('favorite', {
+  }), _vm._v(" said " + _vm._s(this.attributes.created_at) + "\n            \t")]), _vm._v(" "), (_vm.signedIn) ? _c('favorite', {
     attrs: {
       "reply": _vm.attributes
     }
   }) : _vm._e()], 1)]), _vm._v(" "), _c('div', {
     staticClass: "panel-body"
-  }, [(_vm.editing) ? _c('div', [_c('div', {
+  }, [(_vm.editing) ? _c('div', [_c('form', {
+    on: {
+      "submit": _vm.update
+    }
+  }, [_c('div', {
     staticClass: "form-group"
   }, [_c('textarea', {
     directives: [{
@@ -32751,6 +32766,9 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       expression: "body"
     }],
     staticClass: "form-control",
+    attrs: {
+      "required": ""
+    },
     domProps: {
       "value": (_vm.body)
     },
@@ -32761,18 +32779,16 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       }
     }
   })]), _vm._v(" "), _c('button', {
-    staticClass: "btn btn-primary btn-xs",
-    on: {
-      "click": _vm.update
-    }
+    staticClass: "btn btn-primary btn-xs"
   }, [_vm._v("Confirm")]), _vm._v(" "), _c('button', {
     staticClass: "btn btn-link btn-xs",
+    attrs: {
+      "type": "button"
+    },
     on: {
-      "click": function($event) {
-        _vm.editing = false
-      }
+      "click": _vm.cancel
     }
-  }, [_vm._v("Cancel")])]) : _c('div', {
+  }, [_vm._v("Cancel")])])]) : _c('div', {
     domProps: {
       "textContent": _vm._s(_vm.body)
     }
@@ -32781,9 +32797,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }, [_c('button', {
     staticClass: "btn btn-default btn-xs mr",
     on: {
-      "click": function($event) {
-        _vm.editing = true
-      }
+      "click": _vm.edit
     }
   }, [_vm._v("Edit")]), _vm._v(" "), _c('button', {
     staticClass: "btn btn-default btn-xs mr",

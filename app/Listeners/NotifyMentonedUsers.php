@@ -18,7 +18,6 @@ class NotifyMentonedUsers
      */
     public function __construct(Reply $reply)
     {
-        //
         $this->reply = $reply;
     }
 
@@ -30,12 +29,8 @@ class NotifyMentonedUsers
      */
     public function handle(ThreadReceivesNewReply $event)
     {
-        $mentionedNames = $event->reply->mentionedUsers();
-
-        collect($mentionedNames)
-            ->map(function ($name) {
-                return User::whereName($name)->first();
-            })
+        User::whereIn('name', $event->reply->mentionedUsers())
+            ->get()
             ->each
             ->notify(new YouAreMentioned($event->reply));
     }

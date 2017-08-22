@@ -25,12 +25,9 @@ class ReplyController extends Controller
 
     public function update(Reply $reply)
     {
-        try {
-            $this->authorize('update', $reply);
-            $this->validate(request(), ['body' => 'required|spam']);
-        } catch (\Exception $e) {
-            return response('Sorry, your reply could not be saved at this time.', 422);
-        }
+        $this->authorize('update', $reply);
+
+        $this->validate(request(), ['body' => 'required|spam']);
 
         $reply->update(request(['body']));
     }
