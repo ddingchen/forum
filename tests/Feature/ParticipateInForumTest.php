@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Tests\TestCase;
 
 class ParticipateInForumTest extends TestCase
@@ -58,9 +59,10 @@ class ParticipateInForumTest extends TestCase
     {
         $reply = create('App\Reply');
 
+        $this->expectException(AuthorizationException::class);
+
         $this->signIn()
-            ->patch("reply/{$reply->id}", ['body' => 'This was updated, foolish!'])
-            ->assertStatus(422);
+            ->patch("reply/{$reply->id}", ['body' => 'This was updated, foolish!']);
     }
 
     public function test_an_authorized_user_can_update_reply()
