@@ -41,3 +41,4 @@ Route::get('profile/{user}/subscription', 'UserNotificationController@index');
 Route::delete('profile/{user}/subscription/{subscription}', 'UserNotificationController@destroy');
 
 Route::get('api/users', 'Api\UserController@index');
+Route::post('api/user/{user}/avatar', 'Api\AvatarController@store')->middleware('auth');
