@@ -12,7 +12,9 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <div class="level">
+                            <image class="mr" src="/storage/{{ $thread->creator->avatarPath() }}" alt="{{ $thread->creator->name }}" width="25" height="25"/>
                             <span class="flex">
+
                                 <a href="{{ route('profile', $thread->creator->name) }}">{{ $thread->creator->name }}</a> posted {{ $thread->title }}
                             </span>
                             @can('delete', $thread)
