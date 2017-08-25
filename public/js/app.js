@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 69);
+/******/ 	return __webpack_require__(__webpack_require__.s = 73);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,7 +73,7 @@
 "use strict";
 
 
-var bind = __webpack_require__(7);
+var bind = __webpack_require__(8);
 
 /*global toString:true*/
 
@@ -454,10 +454,10 @@ function getDefaultAdapter() {
   var adapter;
   if (typeof XMLHttpRequest !== 'undefined') {
     // For browsers use XHR adapter
-    adapter = __webpack_require__(3);
+    adapter = __webpack_require__(4);
   } else if (typeof process !== 'undefined') {
     // For node use HTTP adapter
-    adapter = __webpack_require__(3);
+    adapter = __webpack_require__(4);
   }
   return adapter;
 }
@@ -528,274 +528,10 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(46)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(48)))
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var utils = __webpack_require__(0);
-var settle = __webpack_require__(20);
-var buildURL = __webpack_require__(23);
-var parseHeaders = __webpack_require__(29);
-var isURLSameOrigin = __webpack_require__(27);
-var createError = __webpack_require__(6);
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(22);
-
-module.exports = function xhrAdapter(config) {
-  return new Promise(function dispatchXhrRequest(resolve, reject) {
-    var requestData = config.data;
-    var requestHeaders = config.headers;
-
-    if (utils.isFormData(requestData)) {
-      delete requestHeaders['Content-Type']; // Let the browser set it
-    }
-
-    var request = new XMLHttpRequest();
-    var loadEvent = 'onreadystatechange';
-    var xDomain = false;
-
-    // For IE 8/9 CORS support
-    // Only supports POST and GET calls and doesn't returns the response headers.
-    // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
-    if ("development" !== 'test' &&
-        typeof window !== 'undefined' &&
-        window.XDomainRequest && !('withCredentials' in request) &&
-        !isURLSameOrigin(config.url)) {
-      request = new window.XDomainRequest();
-      loadEvent = 'onload';
-      xDomain = true;
-      request.onprogress = function handleProgress() {};
-      request.ontimeout = function handleTimeout() {};
-    }
-
-    // HTTP basic authentication
-    if (config.auth) {
-      var username = config.auth.username || '';
-      var password = config.auth.password || '';
-      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
-    }
-
-    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
-
-    // Set the request timeout in MS
-    request.timeout = config.timeout;
-
-    // Listen for ready state
-    request[loadEvent] = function handleLoad() {
-      if (!request || (request.readyState !== 4 && !xDomain)) {
-        return;
-      }
-
-      // The request errored out and we didn't get a response, this will be
-      // handled by onerror instead
-      // With one exception: request that using file: protocol, most browsers
-      // will return status as 0 even though it's a successful request
-      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
-        return;
-      }
-
-      // Prepare the response
-      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
-      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
-      var response = {
-        data: responseData,
-        // IE sends 1223 instead of 204 (https://github.com/mzabriskie/axios/issues/201)
-        status: request.status === 1223 ? 204 : request.status,
-        statusText: request.status === 1223 ? 'No Content' : request.statusText,
-        headers: responseHeaders,
-        config: config,
-        request: request
-      };
-
-      settle(resolve, reject, response);
-
-      // Clean up request
-      request = null;
-    };
-
-    // Handle low level network errors
-    request.onerror = function handleError() {
-      // Real errors are hidden from us by the browser
-      // onerror should only fire if it's a network error
-      reject(createError('Network Error', config));
-
-      // Clean up request
-      request = null;
-    };
-
-    // Handle timeout
-    request.ontimeout = function handleTimeout() {
-      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED'));
-
-      // Clean up request
-      request = null;
-    };
-
-    // Add xsrf header
-    // This is only done if running in a standard browser environment.
-    // Specifically not if we're in a web worker, or react-native.
-    if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__(25);
-
-      // Add xsrf header
-      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
-          cookies.read(config.xsrfCookieName) :
-          undefined;
-
-      if (xsrfValue) {
-        requestHeaders[config.xsrfHeaderName] = xsrfValue;
-      }
-    }
-
-    // Add headers to the request
-    if ('setRequestHeader' in request) {
-      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
-        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
-          // Remove Content-Type if data is undefined
-          delete requestHeaders[key];
-        } else {
-          // Otherwise add header to the request
-          request.setRequestHeader(key, val);
-        }
-      });
-    }
-
-    // Add withCredentials to request if needed
-    if (config.withCredentials) {
-      request.withCredentials = true;
-    }
-
-    // Add responseType to request if needed
-    if (config.responseType) {
-      try {
-        request.responseType = config.responseType;
-      } catch (e) {
-        if (request.responseType !== 'json') {
-          throw e;
-        }
-      }
-    }
-
-    // Handle progress if needed
-    if (typeof config.onDownloadProgress === 'function') {
-      request.addEventListener('progress', config.onDownloadProgress);
-    }
-
-    // Not all browsers support upload events
-    if (typeof config.onUploadProgress === 'function' && request.upload) {
-      request.upload.addEventListener('progress', config.onUploadProgress);
-    }
-
-    if (config.cancelToken) {
-      // Handle cancellation
-      config.cancelToken.promise.then(function onCanceled(cancel) {
-        if (!request) {
-          return;
-        }
-
-        request.abort();
-        reject(cancel);
-        // Clean up request
-        request = null;
-      });
-    }
-
-    if (requestData === undefined) {
-      requestData = null;
-    }
-
-    // Send the request
-    request.send(requestData);
-  });
-};
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/**
- * A `Cancel` is an object that is thrown when an operation is canceled.
- *
- * @class
- * @param {string=} message The message.
- */
-function Cancel(message) {
-  this.message = message;
-}
-
-Cancel.prototype.toString = function toString() {
-  return 'Cancel' + (this.message ? ': ' + this.message : '');
-};
-
-Cancel.prototype.__CANCEL__ = true;
-
-module.exports = Cancel;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function isCancel(value) {
-  return !!(value && value.__CANCEL__);
-};
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var enhanceError = __webpack_require__(19);
-
-/**
- * Create an Error with the specified message, config, error code, and response.
- *
- * @param {string} message The error message.
- * @param {Object} config The config.
- * @param {string} [code] The error code (for example, 'ECONNABORTED').
- @ @param {Object} [response] The response.
- * @returns {Error} The created error.
- */
-module.exports = function createError(message, config, code, response) {
-  var error = new Error(message);
-  return enhanceError(error, config, code, response);
-};
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function bind(fn, thisArg) {
-  return function wrap() {
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i];
-    }
-    return fn.apply(thisArg, args);
-  };
-};
-
-
-/***/ }),
-/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -11055,6 +10791,270 @@ return jQuery;
 
 
 /***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var utils = __webpack_require__(0);
+var settle = __webpack_require__(20);
+var buildURL = __webpack_require__(23);
+var parseHeaders = __webpack_require__(29);
+var isURLSameOrigin = __webpack_require__(27);
+var createError = __webpack_require__(7);
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(22);
+
+module.exports = function xhrAdapter(config) {
+  return new Promise(function dispatchXhrRequest(resolve, reject) {
+    var requestData = config.data;
+    var requestHeaders = config.headers;
+
+    if (utils.isFormData(requestData)) {
+      delete requestHeaders['Content-Type']; // Let the browser set it
+    }
+
+    var request = new XMLHttpRequest();
+    var loadEvent = 'onreadystatechange';
+    var xDomain = false;
+
+    // For IE 8/9 CORS support
+    // Only supports POST and GET calls and doesn't returns the response headers.
+    // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
+    if ("development" !== 'test' &&
+        typeof window !== 'undefined' &&
+        window.XDomainRequest && !('withCredentials' in request) &&
+        !isURLSameOrigin(config.url)) {
+      request = new window.XDomainRequest();
+      loadEvent = 'onload';
+      xDomain = true;
+      request.onprogress = function handleProgress() {};
+      request.ontimeout = function handleTimeout() {};
+    }
+
+    // HTTP basic authentication
+    if (config.auth) {
+      var username = config.auth.username || '';
+      var password = config.auth.password || '';
+      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+    }
+
+    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
+
+    // Set the request timeout in MS
+    request.timeout = config.timeout;
+
+    // Listen for ready state
+    request[loadEvent] = function handleLoad() {
+      if (!request || (request.readyState !== 4 && !xDomain)) {
+        return;
+      }
+
+      // The request errored out and we didn't get a response, this will be
+      // handled by onerror instead
+      // With one exception: request that using file: protocol, most browsers
+      // will return status as 0 even though it's a successful request
+      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+        return;
+      }
+
+      // Prepare the response
+      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+      var response = {
+        data: responseData,
+        // IE sends 1223 instead of 204 (https://github.com/mzabriskie/axios/issues/201)
+        status: request.status === 1223 ? 204 : request.status,
+        statusText: request.status === 1223 ? 'No Content' : request.statusText,
+        headers: responseHeaders,
+        config: config,
+        request: request
+      };
+
+      settle(resolve, reject, response);
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle low level network errors
+    request.onerror = function handleError() {
+      // Real errors are hidden from us by the browser
+      // onerror should only fire if it's a network error
+      reject(createError('Network Error', config));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle timeout
+    request.ontimeout = function handleTimeout() {
+      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED'));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Add xsrf header
+    // This is only done if running in a standard browser environment.
+    // Specifically not if we're in a web worker, or react-native.
+    if (utils.isStandardBrowserEnv()) {
+      var cookies = __webpack_require__(25);
+
+      // Add xsrf header
+      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
+          cookies.read(config.xsrfCookieName) :
+          undefined;
+
+      if (xsrfValue) {
+        requestHeaders[config.xsrfHeaderName] = xsrfValue;
+      }
+    }
+
+    // Add headers to the request
+    if ('setRequestHeader' in request) {
+      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
+          // Remove Content-Type if data is undefined
+          delete requestHeaders[key];
+        } else {
+          // Otherwise add header to the request
+          request.setRequestHeader(key, val);
+        }
+      });
+    }
+
+    // Add withCredentials to request if needed
+    if (config.withCredentials) {
+      request.withCredentials = true;
+    }
+
+    // Add responseType to request if needed
+    if (config.responseType) {
+      try {
+        request.responseType = config.responseType;
+      } catch (e) {
+        if (request.responseType !== 'json') {
+          throw e;
+        }
+      }
+    }
+
+    // Handle progress if needed
+    if (typeof config.onDownloadProgress === 'function') {
+      request.addEventListener('progress', config.onDownloadProgress);
+    }
+
+    // Not all browsers support upload events
+    if (typeof config.onUploadProgress === 'function' && request.upload) {
+      request.upload.addEventListener('progress', config.onUploadProgress);
+    }
+
+    if (config.cancelToken) {
+      // Handle cancellation
+      config.cancelToken.promise.then(function onCanceled(cancel) {
+        if (!request) {
+          return;
+        }
+
+        request.abort();
+        reject(cancel);
+        // Clean up request
+        request = null;
+      });
+    }
+
+    if (requestData === undefined) {
+      requestData = null;
+    }
+
+    // Send the request
+    request.send(requestData);
+  });
+};
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * A `Cancel` is an object that is thrown when an operation is canceled.
+ *
+ * @class
+ * @param {string=} message The message.
+ */
+function Cancel(message) {
+  this.message = message;
+}
+
+Cancel.prototype.toString = function toString() {
+  return 'Cancel' + (this.message ? ': ' + this.message : '');
+};
+
+Cancel.prototype.__CANCEL__ = true;
+
+module.exports = Cancel;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = function isCancel(value) {
+  return !!(value && value.__CANCEL__);
+};
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var enhanceError = __webpack_require__(19);
+
+/**
+ * Create an Error with the specified message, config, error code, and response.
+ *
+ * @param {string} message The error message.
+ * @param {Object} config The config.
+ * @param {string} [code] The error code (for example, 'ECONNABORTED').
+ @ @param {Object} [response] The response.
+ * @returns {Error} The created error.
+ */
+module.exports = function createError(message, config, code, response) {
+  var error = new Error(message);
+  return enhanceError(error, config, code, response);
+};
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = function bind(fn, thisArg) {
+  return function wrap() {
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+    return fn.apply(thisArg, args);
+  };
+};
+
+
+/***/ }),
 /* 9 */
 /***/ (function(module, exports) {
 
@@ -11092,9 +11092,9 @@ module.exports = g;
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-__webpack_require__(40);
+__webpack_require__(41);
 
-window.Vue = __webpack_require__(67);
+window.Vue = __webpack_require__(71);
 
 Vue.prototype.authorize = function (handle) {
   var user = window.App.user;
@@ -11115,11 +11115,12 @@ window.flash = function (message) {
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('user-notification', __webpack_require__(54));
-Vue.component('flash', __webpack_require__(48));
-Vue.component('paginator', __webpack_require__(50));
-Vue.component('subscribe-button', __webpack_require__(53));
-Vue.component('thread-view', __webpack_require__(55));
+Vue.component('user-notification', __webpack_require__(57));
+Vue.component('flash', __webpack_require__(51));
+Vue.component('paginator', __webpack_require__(53));
+Vue.component('subscribe-button', __webpack_require__(56));
+Vue.component('avatar-form', __webpack_require__(49));
+Vue.component('thread-view', __webpack_require__(58));
 
 var app = new Vue({
   el: '#app'
@@ -11144,7 +11145,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
 (function (root, factory) {
   if (true) {
     // AMD. Register as an anonymous module unless amdModuleId is set
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function (a0) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (a0) {
       return (factory(a0));
     }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -12359,7 +12360,7 @@ module.exports = __webpack_require__(14);
 
 
 var utils = __webpack_require__(0);
-var bind = __webpack_require__(7);
+var bind = __webpack_require__(8);
 var Axios = __webpack_require__(16);
 var defaults = __webpack_require__(2);
 
@@ -12394,9 +12395,9 @@ axios.create = function create(instanceConfig) {
 };
 
 // Expose Cancel & CancelToken
-axios.Cancel = __webpack_require__(4);
+axios.Cancel = __webpack_require__(5);
 axios.CancelToken = __webpack_require__(15);
-axios.isCancel = __webpack_require__(5);
+axios.isCancel = __webpack_require__(6);
 
 // Expose all/spread
 axios.all = function all(promises) {
@@ -12417,7 +12418,7 @@ module.exports.default = axios;
 "use strict";
 
 
-var Cancel = __webpack_require__(4);
+var Cancel = __webpack_require__(5);
 
 /**
  * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -12634,7 +12635,7 @@ module.exports = InterceptorManager;
 
 var utils = __webpack_require__(0);
 var transformData = __webpack_require__(21);
-var isCancel = __webpack_require__(5);
+var isCancel = __webpack_require__(6);
 var defaults = __webpack_require__(2);
 
 /**
@@ -12744,7 +12745,7 @@ module.exports = function enhanceError(error, config, code, response) {
 "use strict";
 
 
-var createError = __webpack_require__(6);
+var createError = __webpack_require__(7);
 
 /**
  * Resolve or reject a Promise based on response status.
@@ -13192,6 +13193,69 @@ module.exports = function spread(callback) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__FileUploader_vue__ = __webpack_require__(81);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__FileUploader_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__FileUploader_vue__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    components: {
+        FileUploader: __WEBPACK_IMPORTED_MODULE_0__FileUploader_vue___default.a
+    },
+    props: ['user'],
+    data: function data() {
+        return {
+            selectedAvatar: this.user.avatar_path
+        };
+    },
+
+    computed: {
+        canUpdate: function canUpdate() {
+            var _this = this;
+
+            return this.authorize(function (authUser) {
+                return authUser.id == _this.user.id;
+            });
+        }
+    },
+    methods: {
+        fileLoaded: function fileLoaded(event) {
+            debugger;
+            this.selectedAvatar = event.dataUrl;
+            this.persist(event.file);
+        },
+        persist: function persist(file) {
+            var formData = new FormData();
+            formData.append('avatar', file);
+            axios.post('/api/user/' + this.user.name + '/avatar', formData).then(function (response) {
+                flash('Avatar update successfully!');
+            });
+        }
+    }
+});
+
+/***/ }),
+/* 32 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
@@ -13235,7 +13299,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13302,12 +13366,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery_caret__ = __webpack_require__(77);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery_caret__ = __webpack_require__(46);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery_caret___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery_caret__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_at_js__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_at_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_at_js__);
@@ -13389,7 +13453,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13448,16 +13512,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Reply_vue__ = __webpack_require__(52);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Reply_vue__ = __webpack_require__(55);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Reply_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__Reply_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_NewReply_vue__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_NewReply_vue__ = __webpack_require__(52);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_NewReply_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__components_NewReply_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mixins_collection__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mixins_collection__ = __webpack_require__(42);
 //
 //
 //
@@ -13508,12 +13572,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Favorite_vue__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Favorite_vue__ = __webpack_require__(50);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Favorite_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__Favorite_vue__);
 //
 //
@@ -13605,7 +13669,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13639,7 +13703,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13688,12 +13752,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_Replies_vue__ = __webpack_require__(51);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_Replies_vue__ = __webpack_require__(54);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_Replies_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__components_Replies_vue__);
 
 
@@ -13711,11 +13775,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
-window._ = __webpack_require__(45);
+window._ = __webpack_require__(47);
 
 /**
  * We'll load jQuery and the Bootstrap jQuery plugin which provides support
@@ -13724,9 +13788,9 @@ window._ = __webpack_require__(45);
  */
 
 try {
-  window.$ = window.jQuery = __webpack_require__(8);
+  window.$ = window.jQuery = __webpack_require__(3);
 
-  __webpack_require__(42);
+  __webpack_require__(43);
 } catch (e) {}
 
 /**
@@ -13756,7 +13820,7 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 // });
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13782,7 +13846,7 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 });
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports) {
 
 /*!
@@ -16165,14 +16229,14 @@ if (typeof jQuery === 'undefined') {
 
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(44)();
+exports = module.exports = __webpack_require__(45)();
 exports.push([module.i, "\n.alert-message {\n    position: fixed;\n    right: 25px;\n    bottom: 25px;\n}\n", ""]);
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports) {
 
 /*
@@ -16228,7 +16292,450 @@ module.exports = function() {
 
 
 /***/ }),
-/* 45 */
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (root, factory) {
+  if (true) {
+    // AMD. Register as an anonymous module.
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function ($) {
+      return (root.returnExportsGlobal = factory($));
+    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+  } else if (typeof exports === 'object') {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like enviroments that support module.exports,
+    // like Node.
+    module.exports = factory(require("jquery"));
+  } else {
+    factory(jQuery);
+  }
+}(this, function ($) {
+
+/*
+  Implement Github like autocomplete mentions
+  http://ichord.github.com/At.js
+
+  Copyright (c) 2013 chord.luo@gmail.com
+  Licensed under the MIT license.
+*/
+
+/*
+本插件操作 textarea 或者 input 内的插入符
+只实现了获得插入符在文本框中的位置，我设置
+插入符的位置.
+*/
+
+"use strict";
+var EditableCaret, InputCaret, Mirror, Utils, discoveryIframeOf, methods, oDocument, oFrame, oWindow, pluginName, setContextBy;
+
+pluginName = 'caret';
+
+EditableCaret = (function() {
+  function EditableCaret($inputor) {
+    this.$inputor = $inputor;
+    this.domInputor = this.$inputor[0];
+  }
+
+  EditableCaret.prototype.setPos = function(pos) {
+    var fn, found, offset, sel;
+    if (sel = oWindow.getSelection()) {
+      offset = 0;
+      found = false;
+      (fn = function(pos, parent) {
+        var node, range, _i, _len, _ref, _results;
+        _ref = parent.childNodes;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          node = _ref[_i];
+          if (found) {
+            break;
+          }
+          if (node.nodeType === 3) {
+            if (offset + node.length >= pos) {
+              found = true;
+              range = oDocument.createRange();
+              range.setStart(node, pos - offset);
+              sel.removeAllRanges();
+              sel.addRange(range);
+              break;
+            } else {
+              _results.push(offset += node.length);
+            }
+          } else {
+            _results.push(fn(pos, node));
+          }
+        }
+        return _results;
+      })(pos, this.domInputor);
+    }
+    return this.domInputor;
+  };
+
+  EditableCaret.prototype.getIEPosition = function() {
+    return this.getPosition();
+  };
+
+  EditableCaret.prototype.getPosition = function() {
+    var inputor_offset, offset;
+    offset = this.getOffset();
+    inputor_offset = this.$inputor.offset();
+    offset.left -= inputor_offset.left;
+    offset.top -= inputor_offset.top;
+    return offset;
+  };
+
+  EditableCaret.prototype.getOldIEPos = function() {
+    var preCaretTextRange, textRange;
+    textRange = oDocument.selection.createRange();
+    preCaretTextRange = oDocument.body.createTextRange();
+    preCaretTextRange.moveToElementText(this.domInputor);
+    preCaretTextRange.setEndPoint("EndToEnd", textRange);
+    return preCaretTextRange.text.length;
+  };
+
+  EditableCaret.prototype.getPos = function() {
+    var clonedRange, pos, range;
+    if (range = this.range()) {
+      clonedRange = range.cloneRange();
+      clonedRange.selectNodeContents(this.domInputor);
+      clonedRange.setEnd(range.endContainer, range.endOffset);
+      pos = clonedRange.toString().length;
+      clonedRange.detach();
+      return pos;
+    } else if (oDocument.selection) {
+      return this.getOldIEPos();
+    }
+  };
+
+  EditableCaret.prototype.getOldIEOffset = function() {
+    var range, rect;
+    range = oDocument.selection.createRange().duplicate();
+    range.moveStart("character", -1);
+    rect = range.getBoundingClientRect();
+    return {
+      height: rect.bottom - rect.top,
+      left: rect.left,
+      top: rect.top
+    };
+  };
+
+  EditableCaret.prototype.getOffset = function(pos) {
+    var clonedRange, offset, range, rect, shadowCaret;
+    if (oWindow.getSelection && (range = this.range())) {
+      if (range.endOffset - 1 > 0 && range.endContainer !== this.domInputor) {
+        clonedRange = range.cloneRange();
+        clonedRange.setStart(range.endContainer, range.endOffset - 1);
+        clonedRange.setEnd(range.endContainer, range.endOffset);
+        rect = clonedRange.getBoundingClientRect();
+        offset = {
+          height: rect.height,
+          left: rect.left + rect.width,
+          top: rect.top
+        };
+        clonedRange.detach();
+      }
+      if (!offset || (offset != null ? offset.height : void 0) === 0) {
+        clonedRange = range.cloneRange();
+        shadowCaret = $(oDocument.createTextNode("|"));
+        clonedRange.insertNode(shadowCaret[0]);
+        clonedRange.selectNode(shadowCaret[0]);
+        rect = clonedRange.getBoundingClientRect();
+        offset = {
+          height: rect.height,
+          left: rect.left,
+          top: rect.top
+        };
+        shadowCaret.remove();
+        clonedRange.detach();
+      }
+    } else if (oDocument.selection) {
+      offset = this.getOldIEOffset();
+    }
+    if (offset) {
+      offset.top += $(oWindow).scrollTop();
+      offset.left += $(oWindow).scrollLeft();
+    }
+    return offset;
+  };
+
+  EditableCaret.prototype.range = function() {
+    var sel;
+    if (!oWindow.getSelection) {
+      return;
+    }
+    sel = oWindow.getSelection();
+    if (sel.rangeCount > 0) {
+      return sel.getRangeAt(0);
+    } else {
+      return null;
+    }
+  };
+
+  return EditableCaret;
+
+})();
+
+InputCaret = (function() {
+  function InputCaret($inputor) {
+    this.$inputor = $inputor;
+    this.domInputor = this.$inputor[0];
+  }
+
+  InputCaret.prototype.getIEPos = function() {
+    var endRange, inputor, len, normalizedValue, pos, range, textInputRange;
+    inputor = this.domInputor;
+    range = oDocument.selection.createRange();
+    pos = 0;
+    if (range && range.parentElement() === inputor) {
+      normalizedValue = inputor.value.replace(/\r\n/g, "\n");
+      len = normalizedValue.length;
+      textInputRange = inputor.createTextRange();
+      textInputRange.moveToBookmark(range.getBookmark());
+      endRange = inputor.createTextRange();
+      endRange.collapse(false);
+      if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
+        pos = len;
+      } else {
+        pos = -textInputRange.moveStart("character", -len);
+      }
+    }
+    return pos;
+  };
+
+  InputCaret.prototype.getPos = function() {
+    if (oDocument.selection) {
+      return this.getIEPos();
+    } else {
+      return this.domInputor.selectionStart;
+    }
+  };
+
+  InputCaret.prototype.setPos = function(pos) {
+    var inputor, range;
+    inputor = this.domInputor;
+    if (oDocument.selection) {
+      range = inputor.createTextRange();
+      range.move("character", pos);
+      range.select();
+    } else if (inputor.setSelectionRange) {
+      inputor.setSelectionRange(pos, pos);
+    }
+    return inputor;
+  };
+
+  InputCaret.prototype.getIEOffset = function(pos) {
+    var h, textRange, x, y;
+    textRange = this.domInputor.createTextRange();
+    pos || (pos = this.getPos());
+    textRange.move('character', pos);
+    x = textRange.boundingLeft;
+    y = textRange.boundingTop;
+    h = textRange.boundingHeight;
+    return {
+      left: x,
+      top: y,
+      height: h
+    };
+  };
+
+  InputCaret.prototype.getOffset = function(pos) {
+    var $inputor, offset, position;
+    $inputor = this.$inputor;
+    if (oDocument.selection) {
+      offset = this.getIEOffset(pos);
+      offset.top += $(oWindow).scrollTop() + $inputor.scrollTop();
+      offset.left += $(oWindow).scrollLeft() + $inputor.scrollLeft();
+      return offset;
+    } else {
+      offset = $inputor.offset();
+      position = this.getPosition(pos);
+      return offset = {
+        left: offset.left + position.left - $inputor.scrollLeft(),
+        top: offset.top + position.top - $inputor.scrollTop(),
+        height: position.height
+      };
+    }
+  };
+
+  InputCaret.prototype.getPosition = function(pos) {
+    var $inputor, at_rect, end_range, format, html, mirror, start_range;
+    $inputor = this.$inputor;
+    format = function(value) {
+      value = value.replace(/<|>|`|"|&/g, '?').replace(/\r\n|\r|\n/g, "<br/>");
+      if (/firefox/i.test(navigator.userAgent)) {
+        value = value.replace(/\s/g, '&nbsp;');
+      }
+      return value;
+    };
+    if (pos === void 0) {
+      pos = this.getPos();
+    }
+    start_range = $inputor.val().slice(0, pos);
+    end_range = $inputor.val().slice(pos);
+    html = "<span style='position: relative; display: inline;'>" + format(start_range) + "</span>";
+    html += "<span id='caret' style='position: relative; display: inline;'>|</span>";
+    html += "<span style='position: relative; display: inline;'>" + format(end_range) + "</span>";
+    mirror = new Mirror($inputor);
+    return at_rect = mirror.create(html).rect();
+  };
+
+  InputCaret.prototype.getIEPosition = function(pos) {
+    var h, inputorOffset, offset, x, y;
+    offset = this.getIEOffset(pos);
+    inputorOffset = this.$inputor.offset();
+    x = offset.left - inputorOffset.left;
+    y = offset.top - inputorOffset.top;
+    h = offset.height;
+    return {
+      left: x,
+      top: y,
+      height: h
+    };
+  };
+
+  return InputCaret;
+
+})();
+
+Mirror = (function() {
+  Mirror.prototype.css_attr = ["borderBottomWidth", "borderLeftWidth", "borderRightWidth", "borderTopStyle", "borderRightStyle", "borderBottomStyle", "borderLeftStyle", "borderTopWidth", "boxSizing", "fontFamily", "fontSize", "fontWeight", "height", "letterSpacing", "lineHeight", "marginBottom", "marginLeft", "marginRight", "marginTop", "outlineWidth", "overflow", "overflowX", "overflowY", "paddingBottom", "paddingLeft", "paddingRight", "paddingTop", "textAlign", "textOverflow", "textTransform", "whiteSpace", "wordBreak", "wordWrap"];
+
+  function Mirror($inputor) {
+    this.$inputor = $inputor;
+  }
+
+  Mirror.prototype.mirrorCss = function() {
+    var css,
+      _this = this;
+    css = {
+      position: 'absolute',
+      left: -9999,
+      top: 0,
+      zIndex: -20000
+    };
+    if (this.$inputor.prop('tagName') === 'TEXTAREA') {
+      this.css_attr.push('width');
+    }
+    $.each(this.css_attr, function(i, p) {
+      return css[p] = _this.$inputor.css(p);
+    });
+    return css;
+  };
+
+  Mirror.prototype.create = function(html) {
+    this.$mirror = $('<div></div>');
+    this.$mirror.css(this.mirrorCss());
+    this.$mirror.html(html);
+    this.$inputor.after(this.$mirror);
+    return this;
+  };
+
+  Mirror.prototype.rect = function() {
+    var $flag, pos, rect;
+    $flag = this.$mirror.find("#caret");
+    pos = $flag.position();
+    rect = {
+      left: pos.left,
+      top: pos.top,
+      height: $flag.height()
+    };
+    this.$mirror.remove();
+    return rect;
+  };
+
+  return Mirror;
+
+})();
+
+Utils = {
+  contentEditable: function($inputor) {
+    return !!($inputor[0].contentEditable && $inputor[0].contentEditable === 'true');
+  }
+};
+
+methods = {
+  pos: function(pos) {
+    if (pos || pos === 0) {
+      return this.setPos(pos);
+    } else {
+      return this.getPos();
+    }
+  },
+  position: function(pos) {
+    if (oDocument.selection) {
+      return this.getIEPosition(pos);
+    } else {
+      return this.getPosition(pos);
+    }
+  },
+  offset: function(pos) {
+    var offset;
+    offset = this.getOffset(pos);
+    return offset;
+  }
+};
+
+oDocument = null;
+
+oWindow = null;
+
+oFrame = null;
+
+setContextBy = function(settings) {
+  var iframe;
+  if (iframe = settings != null ? settings.iframe : void 0) {
+    oFrame = iframe;
+    oWindow = iframe.contentWindow;
+    return oDocument = iframe.contentDocument || oWindow.document;
+  } else {
+    oFrame = void 0;
+    oWindow = window;
+    return oDocument = document;
+  }
+};
+
+discoveryIframeOf = function($dom) {
+  var error;
+  oDocument = $dom[0].ownerDocument;
+  oWindow = oDocument.defaultView || oDocument.parentWindow;
+  try {
+    return oFrame = oWindow.frameElement;
+  } catch (_error) {
+    error = _error;
+  }
+};
+
+$.fn.caret = function(method, value, settings) {
+  var caret;
+  if (methods[method]) {
+    if ($.isPlainObject(value)) {
+      setContextBy(value);
+      value = void 0;
+    } else {
+      setContextBy(settings);
+    }
+    caret = Utils.contentEditable(this) ? new EditableCaret(this) : new InputCaret(this);
+    return methods[method].apply(caret, [value]);
+  } else {
+    return $.error("Method " + method + " does not exist on jQuery.caret");
+  }
+};
+
+$.fn.caret.EditableCaret = EditableCaret;
+
+$.fn.caret.InputCaret = InputCaret;
+
+$.fn.caret.Utils = Utils;
+
+$.fn.caret.apis = methods;
+
+
+}));
+
+
+/***/ }),
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -33317,10 +33824,10 @@ module.exports = function() {
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), __webpack_require__(68)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), __webpack_require__(72)(module)))
 
 /***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -33510,14 +34017,48 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 47 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
   __webpack_require__(31),
   /* template */
-  __webpack_require__(56),
+  __webpack_require__(66),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "/Users/dc/Documents/Sites/forum/resources/assets/js/components/AvatarForm.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] AvatarForm.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-7d7350c6", Component.options)
+  } else {
+    hotAPI.reload("data-v-7d7350c6", Component.options)
+  }
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(32),
+  /* template */
+  __webpack_require__(59),
   /* scopeId */
   null,
   /* cssModules */
@@ -33544,18 +34085,18 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 48 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
 /* styles */
-__webpack_require__(64)
+__webpack_require__(68)
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(32),
+  __webpack_require__(33),
   /* template */
-  __webpack_require__(57),
+  __webpack_require__(60),
   /* scopeId */
   null,
   /* cssModules */
@@ -33582,14 +34123,14 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 49 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(33),
+  __webpack_require__(34),
   /* template */
-  __webpack_require__(62),
+  __webpack_require__(65),
   /* scopeId */
   null,
   /* cssModules */
@@ -33616,14 +34157,14 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 50 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(34),
+  __webpack_require__(35),
   /* template */
-  __webpack_require__(58),
+  __webpack_require__(61),
   /* scopeId */
   null,
   /* cssModules */
@@ -33650,14 +34191,14 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 51 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(35),
+  __webpack_require__(36),
   /* template */
-  __webpack_require__(63),
+  __webpack_require__(67),
   /* scopeId */
   null,
   /* cssModules */
@@ -33684,14 +34225,14 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 52 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(36),
+  __webpack_require__(37),
   /* template */
-  __webpack_require__(60),
+  __webpack_require__(63),
   /* scopeId */
   null,
   /* cssModules */
@@ -33718,14 +34259,14 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 53 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(37),
+  __webpack_require__(38),
   /* template */
-  __webpack_require__(59),
+  __webpack_require__(62),
   /* scopeId */
   null,
   /* cssModules */
@@ -33752,14 +34293,14 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 54 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(38),
+  __webpack_require__(39),
   /* template */
-  __webpack_require__(61),
+  __webpack_require__(64),
   /* scopeId */
   null,
   /* cssModules */
@@ -33786,12 +34327,12 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 55 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(39),
+  __webpack_require__(40),
   /* template */
   null,
   /* scopeId */
@@ -33819,7 +34360,7 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 56 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -33845,7 +34386,7 @@ if (false) {
 }
 
 /***/ }),
-/* 57 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -33872,7 +34413,7 @@ if (false) {
 }
 
 /***/ }),
-/* 58 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -33939,7 +34480,7 @@ if (false) {
 }
 
 /***/ }),
-/* 59 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -33959,7 +34500,7 @@ if (false) {
 }
 
 /***/ }),
-/* 60 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -34050,7 +34591,7 @@ if (false) {
 }
 
 /***/ }),
-/* 61 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -34093,7 +34634,7 @@ if (false) {
 }
 
 /***/ }),
-/* 62 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -34143,7 +34684,39 @@ if (false) {
 }
 
 /***/ }),
-/* 63 */
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', [_c('div', {
+    staticClass: "level"
+  }, [_c('img', {
+    staticClass: "mr",
+    attrs: {
+      "src": _vm.selectedAvatar,
+      "width": "40",
+      "height": "40"
+    }
+  }), _vm._v(" "), _c('h4', {
+    domProps: {
+      "textContent": _vm._s(_vm.user.name)
+    }
+  })]), _vm._v(" "), (_vm.canUpdate) ? _c('form', [_c('file-uploader', {
+    on: {
+      "loaded": _vm.fileLoaded
+    }
+  })], 1) : _vm._e()])
+},staticRenderFns: []}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-7d7350c6", module.exports)
+  }
+}
+
+/***/ }),
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -34182,17 +34755,17 @@ if (false) {
 }
 
 /***/ }),
-/* 64 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(43);
+var content = __webpack_require__(44);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(65)("145c7a2a", content, false);
+var update = __webpack_require__(69)("145c7a2a", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -34208,7 +34781,7 @@ if(false) {
 }
 
 /***/ }),
-/* 65 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -34227,7 +34800,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(66)
+var listToStyles = __webpack_require__(70)
 
 /*
 type StyleObject = {
@@ -34429,7 +35002,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 66 */
+/* 70 */
 /***/ (function(module, exports) {
 
 /**
@@ -34462,7 +35035,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 67 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -44161,7 +44734,7 @@ module.exports = Vue$3;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ }),
-/* 68 */
+/* 72 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -44189,7 +44762,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 69 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(10);
@@ -44197,454 +44770,98 @@ module.exports = __webpack_require__(11);
 
 
 /***/ }),
-/* 70 */,
-/* 71 */,
-/* 72 */,
-/* 73 */,
 /* 74 */,
 /* 75 */,
 /* 76 */,
-/* 77 */
+/* 77 */,
+/* 78 */,
+/* 79 */,
+/* 80 */,
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (root, factory) {
-  if (true) {
-    // AMD. Register as an anonymous module.
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function ($) {
-      return (root.returnExportsGlobal = factory($));
-    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-  } else if (typeof exports === 'object') {
-    // Node. Does not work with strict CommonJS, but
-    // only CommonJS-like enviroments that support module.exports,
-    // like Node.
-    module.exports = factory(require("jquery"));
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(82),
+  /* template */
+  __webpack_require__(83),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "/Users/dc/Documents/Sites/forum/resources/assets/js/components/FileUploader.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] FileUploader.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-4e9d8f5a", Component.options)
   } else {
-    factory(jQuery);
+    hotAPI.reload("data-v-4e9d8f5a", Component.options)
   }
-}(this, function ($) {
+})()}
 
-/*
-  Implement Github like autocomplete mentions
-  http://ichord.github.com/At.js
+module.exports = Component.exports
 
-  Copyright (c) 2013 chord.luo@gmail.com
-  Licensed under the MIT license.
-*/
 
-/*
-本插件操作 textarea 或者 input 内的插入符
-只实现了获得插入符在文本框中的位置，我设置
-插入符的位置.
-*/
+/***/ }),
+/* 82 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-var EditableCaret, InputCaret, Mirror, Utils, discoveryIframeOf, methods, oDocument, oFrame, oWindow, pluginName, setContextBy;
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
 
-pluginName = 'caret';
+/* harmony default export */ __webpack_exports__["default"] = ({
+    methods: {
+        fileChanged: function fileChanged(event) {
+            var _this = this;
 
-EditableCaret = (function() {
-  function EditableCaret($inputor) {
-    this.$inputor = $inputor;
-    this.domInputor = this.$inputor[0];
-  }
-
-  EditableCaret.prototype.setPos = function(pos) {
-    var fn, found, offset, sel;
-    if (sel = oWindow.getSelection()) {
-      offset = 0;
-      found = false;
-      (fn = function(pos, parent) {
-        var node, range, _i, _len, _ref, _results;
-        _ref = parent.childNodes;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          node = _ref[_i];
-          if (found) {
-            break;
-          }
-          if (node.nodeType === 3) {
-            if (offset + node.length >= pos) {
-              found = true;
-              range = oDocument.createRange();
-              range.setStart(node, pos - offset);
-              sel.removeAllRanges();
-              sel.addRange(range);
-              break;
-            } else {
-              _results.push(offset += node.length);
+            if (event.target.files.length == 0) {
+                return;
             }
-          } else {
-            _results.push(fn(pos, node));
-          }
+            var file = event.target.files[0];
+            var reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (event) {
+                var dataUrl = event.target.result;
+                _this.$emit('loaded', { dataUrl: dataUrl, file: file });
+            };
         }
-        return _results;
-      })(pos, this.domInputor);
     }
-    return this.domInputor;
-  };
+});
 
-  EditableCaret.prototype.getIEPosition = function() {
-    return this.getPosition();
-  };
+/***/ }),
+/* 83 */
+/***/ (function(module, exports, __webpack_require__) {
 
-  EditableCaret.prototype.getPosition = function() {
-    var inputor_offset, offset;
-    offset = this.getOffset();
-    inputor_offset = this.$inputor.offset();
-    offset.left -= inputor_offset.left;
-    offset.top -= inputor_offset.top;
-    return offset;
-  };
-
-  EditableCaret.prototype.getOldIEPos = function() {
-    var preCaretTextRange, textRange;
-    textRange = oDocument.selection.createRange();
-    preCaretTextRange = oDocument.body.createTextRange();
-    preCaretTextRange.moveToElementText(this.domInputor);
-    preCaretTextRange.setEndPoint("EndToEnd", textRange);
-    return preCaretTextRange.text.length;
-  };
-
-  EditableCaret.prototype.getPos = function() {
-    var clonedRange, pos, range;
-    if (range = this.range()) {
-      clonedRange = range.cloneRange();
-      clonedRange.selectNodeContents(this.domInputor);
-      clonedRange.setEnd(range.endContainer, range.endOffset);
-      pos = clonedRange.toString().length;
-      clonedRange.detach();
-      return pos;
-    } else if (oDocument.selection) {
-      return this.getOldIEPos();
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('input', {
+    attrs: {
+      "type": "file",
+      "accept": "image/*"
+    },
+    on: {
+      "change": _vm.fileChanged
     }
-  };
-
-  EditableCaret.prototype.getOldIEOffset = function() {
-    var range, rect;
-    range = oDocument.selection.createRange().duplicate();
-    range.moveStart("character", -1);
-    rect = range.getBoundingClientRect();
-    return {
-      height: rect.bottom - rect.top,
-      left: rect.left,
-      top: rect.top
-    };
-  };
-
-  EditableCaret.prototype.getOffset = function(pos) {
-    var clonedRange, offset, range, rect, shadowCaret;
-    if (oWindow.getSelection && (range = this.range())) {
-      if (range.endOffset - 1 > 0 && range.endContainer !== this.domInputor) {
-        clonedRange = range.cloneRange();
-        clonedRange.setStart(range.endContainer, range.endOffset - 1);
-        clonedRange.setEnd(range.endContainer, range.endOffset);
-        rect = clonedRange.getBoundingClientRect();
-        offset = {
-          height: rect.height,
-          left: rect.left + rect.width,
-          top: rect.top
-        };
-        clonedRange.detach();
-      }
-      if (!offset || (offset != null ? offset.height : void 0) === 0) {
-        clonedRange = range.cloneRange();
-        shadowCaret = $(oDocument.createTextNode("|"));
-        clonedRange.insertNode(shadowCaret[0]);
-        clonedRange.selectNode(shadowCaret[0]);
-        rect = clonedRange.getBoundingClientRect();
-        offset = {
-          height: rect.height,
-          left: rect.left,
-          top: rect.top
-        };
-        shadowCaret.remove();
-        clonedRange.detach();
-      }
-    } else if (oDocument.selection) {
-      offset = this.getOldIEOffset();
-    }
-    if (offset) {
-      offset.top += $(oWindow).scrollTop();
-      offset.left += $(oWindow).scrollLeft();
-    }
-    return offset;
-  };
-
-  EditableCaret.prototype.range = function() {
-    var sel;
-    if (!oWindow.getSelection) {
-      return;
-    }
-    sel = oWindow.getSelection();
-    if (sel.rangeCount > 0) {
-      return sel.getRangeAt(0);
-    } else {
-      return null;
-    }
-  };
-
-  return EditableCaret;
-
-})();
-
-InputCaret = (function() {
-  function InputCaret($inputor) {
-    this.$inputor = $inputor;
-    this.domInputor = this.$inputor[0];
+  })
+},staticRenderFns: []}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-4e9d8f5a", module.exports)
   }
-
-  InputCaret.prototype.getIEPos = function() {
-    var endRange, inputor, len, normalizedValue, pos, range, textInputRange;
-    inputor = this.domInputor;
-    range = oDocument.selection.createRange();
-    pos = 0;
-    if (range && range.parentElement() === inputor) {
-      normalizedValue = inputor.value.replace(/\r\n/g, "\n");
-      len = normalizedValue.length;
-      textInputRange = inputor.createTextRange();
-      textInputRange.moveToBookmark(range.getBookmark());
-      endRange = inputor.createTextRange();
-      endRange.collapse(false);
-      if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
-        pos = len;
-      } else {
-        pos = -textInputRange.moveStart("character", -len);
-      }
-    }
-    return pos;
-  };
-
-  InputCaret.prototype.getPos = function() {
-    if (oDocument.selection) {
-      return this.getIEPos();
-    } else {
-      return this.domInputor.selectionStart;
-    }
-  };
-
-  InputCaret.prototype.setPos = function(pos) {
-    var inputor, range;
-    inputor = this.domInputor;
-    if (oDocument.selection) {
-      range = inputor.createTextRange();
-      range.move("character", pos);
-      range.select();
-    } else if (inputor.setSelectionRange) {
-      inputor.setSelectionRange(pos, pos);
-    }
-    return inputor;
-  };
-
-  InputCaret.prototype.getIEOffset = function(pos) {
-    var h, textRange, x, y;
-    textRange = this.domInputor.createTextRange();
-    pos || (pos = this.getPos());
-    textRange.move('character', pos);
-    x = textRange.boundingLeft;
-    y = textRange.boundingTop;
-    h = textRange.boundingHeight;
-    return {
-      left: x,
-      top: y,
-      height: h
-    };
-  };
-
-  InputCaret.prototype.getOffset = function(pos) {
-    var $inputor, offset, position;
-    $inputor = this.$inputor;
-    if (oDocument.selection) {
-      offset = this.getIEOffset(pos);
-      offset.top += $(oWindow).scrollTop() + $inputor.scrollTop();
-      offset.left += $(oWindow).scrollLeft() + $inputor.scrollLeft();
-      return offset;
-    } else {
-      offset = $inputor.offset();
-      position = this.getPosition(pos);
-      return offset = {
-        left: offset.left + position.left - $inputor.scrollLeft(),
-        top: offset.top + position.top - $inputor.scrollTop(),
-        height: position.height
-      };
-    }
-  };
-
-  InputCaret.prototype.getPosition = function(pos) {
-    var $inputor, at_rect, end_range, format, html, mirror, start_range;
-    $inputor = this.$inputor;
-    format = function(value) {
-      value = value.replace(/<|>|`|"|&/g, '?').replace(/\r\n|\r|\n/g, "<br/>");
-      if (/firefox/i.test(navigator.userAgent)) {
-        value = value.replace(/\s/g, '&nbsp;');
-      }
-      return value;
-    };
-    if (pos === void 0) {
-      pos = this.getPos();
-    }
-    start_range = $inputor.val().slice(0, pos);
-    end_range = $inputor.val().slice(pos);
-    html = "<span style='position: relative; display: inline;'>" + format(start_range) + "</span>";
-    html += "<span id='caret' style='position: relative; display: inline;'>|</span>";
-    html += "<span style='position: relative; display: inline;'>" + format(end_range) + "</span>";
-    mirror = new Mirror($inputor);
-    return at_rect = mirror.create(html).rect();
-  };
-
-  InputCaret.prototype.getIEPosition = function(pos) {
-    var h, inputorOffset, offset, x, y;
-    offset = this.getIEOffset(pos);
-    inputorOffset = this.$inputor.offset();
-    x = offset.left - inputorOffset.left;
-    y = offset.top - inputorOffset.top;
-    h = offset.height;
-    return {
-      left: x,
-      top: y,
-      height: h
-    };
-  };
-
-  return InputCaret;
-
-})();
-
-Mirror = (function() {
-  Mirror.prototype.css_attr = ["borderBottomWidth", "borderLeftWidth", "borderRightWidth", "borderTopStyle", "borderRightStyle", "borderBottomStyle", "borderLeftStyle", "borderTopWidth", "boxSizing", "fontFamily", "fontSize", "fontWeight", "height", "letterSpacing", "lineHeight", "marginBottom", "marginLeft", "marginRight", "marginTop", "outlineWidth", "overflow", "overflowX", "overflowY", "paddingBottom", "paddingLeft", "paddingRight", "paddingTop", "textAlign", "textOverflow", "textTransform", "whiteSpace", "wordBreak", "wordWrap"];
-
-  function Mirror($inputor) {
-    this.$inputor = $inputor;
-  }
-
-  Mirror.prototype.mirrorCss = function() {
-    var css,
-      _this = this;
-    css = {
-      position: 'absolute',
-      left: -9999,
-      top: 0,
-      zIndex: -20000
-    };
-    if (this.$inputor.prop('tagName') === 'TEXTAREA') {
-      this.css_attr.push('width');
-    }
-    $.each(this.css_attr, function(i, p) {
-      return css[p] = _this.$inputor.css(p);
-    });
-    return css;
-  };
-
-  Mirror.prototype.create = function(html) {
-    this.$mirror = $('<div></div>');
-    this.$mirror.css(this.mirrorCss());
-    this.$mirror.html(html);
-    this.$inputor.after(this.$mirror);
-    return this;
-  };
-
-  Mirror.prototype.rect = function() {
-    var $flag, pos, rect;
-    $flag = this.$mirror.find("#caret");
-    pos = $flag.position();
-    rect = {
-      left: pos.left,
-      top: pos.top,
-      height: $flag.height()
-    };
-    this.$mirror.remove();
-    return rect;
-  };
-
-  return Mirror;
-
-})();
-
-Utils = {
-  contentEditable: function($inputor) {
-    return !!($inputor[0].contentEditable && $inputor[0].contentEditable === 'true');
-  }
-};
-
-methods = {
-  pos: function(pos) {
-    if (pos || pos === 0) {
-      return this.setPos(pos);
-    } else {
-      return this.getPos();
-    }
-  },
-  position: function(pos) {
-    if (oDocument.selection) {
-      return this.getIEPosition(pos);
-    } else {
-      return this.getPosition(pos);
-    }
-  },
-  offset: function(pos) {
-    var offset;
-    offset = this.getOffset(pos);
-    return offset;
-  }
-};
-
-oDocument = null;
-
-oWindow = null;
-
-oFrame = null;
-
-setContextBy = function(settings) {
-  var iframe;
-  if (iframe = settings != null ? settings.iframe : void 0) {
-    oFrame = iframe;
-    oWindow = iframe.contentWindow;
-    return oDocument = iframe.contentDocument || oWindow.document;
-  } else {
-    oFrame = void 0;
-    oWindow = window;
-    return oDocument = document;
-  }
-};
-
-discoveryIframeOf = function($dom) {
-  var error;
-  oDocument = $dom[0].ownerDocument;
-  oWindow = oDocument.defaultView || oDocument.parentWindow;
-  try {
-    return oFrame = oWindow.frameElement;
-  } catch (_error) {
-    error = _error;
-  }
-};
-
-$.fn.caret = function(method, value, settings) {
-  var caret;
-  if (methods[method]) {
-    if ($.isPlainObject(value)) {
-      setContextBy(value);
-      value = void 0;
-    } else {
-      setContextBy(settings);
-    }
-    caret = Utils.contentEditable(this) ? new EditableCaret(this) : new InputCaret(this);
-    return methods[method].apply(caret, [value]);
-  } else {
-    return $.error("Method " + method + " does not exist on jQuery.caret");
-  }
-};
-
-$.fn.caret.EditableCaret = EditableCaret;
-
-$.fn.caret.InputCaret = InputCaret;
-
-$.fn.caret.Utils = Utils;
-
-$.fn.caret.apis = methods;
-
-
-}));
-
+}
 
 /***/ })
 /******/ ]);

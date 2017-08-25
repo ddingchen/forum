@@ -30,7 +30,7 @@ class AvatarTest extends TestCase
 
         $this->json('post', 'api/user/' . auth()->user() . '/avatar', [
             'avatar' => UploadedFile::fake()->image('avatar.jpg'),
-        ])->assertStatus(200);
+        ])->assertStatus(204);
     }
 
     public function test_a_user_may_add_avatar_to_their_profile()
@@ -43,7 +43,7 @@ class AvatarTest extends TestCase
             'avatar' => $file = UploadedFile::fake()->image('avatar.jpg'),
         ]);
 
-        $this->assertEquals('avatars/' . $file->hashName(), auth()->user()->avatar_path);
+        $this->assertEquals('/storage/avatars/' . $file->hashName(), auth()->user()->avatar_path);
         Storage::disk('public')->assertExists('avatars/' . $file->hashName());
     }
 }

@@ -16,6 +16,6 @@ class AvatarController extends Controller
             'avatar_path' => request('avatar')->store('avatars', 'public'),
         ]);
 
-        return back();
+        return response([], 204);
     }
 }
