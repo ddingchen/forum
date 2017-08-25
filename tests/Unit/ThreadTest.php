@@ -30,7 +30,7 @@ class ThreadTest extends TestCase
     {
         $this->thread->addReply([
             'body' => 'new reply',
-            'user_id' => 1
+            'user_id' => 1,
         ]);
 
         $this->assertCount(1, $this->thread->replies);
@@ -45,7 +45,7 @@ class ThreadTest extends TestCase
             ->subscribe()
             ->addReply([
                 'body' => 'new reply',
-                'user_id' => 1
+                'user_id' => 1,
             ]);
 
         Notification::assertSentTo(auth()->user(), ThreadWasUpdated::class);
@@ -91,12 +91,26 @@ class ThreadTest extends TestCase
         $thread = create('App\Thread');
 
         $this->signIn();
-        tap(auth()->user(), function($user) use($thread) {
+        tap(auth()->user(), function ($user) use ($thread) {
 
             $this->assertTrue($thread->hasUpdatesFor($user));
             $user->read($thread);
             $this->assertFalse($thread->hasUpdatesFor($user));
 
         });
+    }
+
+    public function test_a_thread_records_visits()
+    {
+        $thread = create('App\Thread');
+
+        $thread->resetVisits();
+        $this->assertEquals(0, $thread->visits());
+
+        $thread->recordVisit();
+        $this->assertEquals(1, $thread->visits());
+
+        $thread->recordVisit();
+        $this->assertEquals(2, $thread->visits());
     }
 }
