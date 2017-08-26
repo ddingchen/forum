@@ -4,11 +4,12 @@ namespace App;
 
 use App\Events\ThreadReceivesNewReply;
 use App\Filters\ThreadFilter;
+use App\Visits;
 use Illuminate\Database\Eloquent\Model;
 
 class Thread extends Model
 {
-    use RecordActivity, RecordVisit;
+    use RecordActivity;
 
     protected $guarded = [];
 
@@ -111,5 +112,10 @@ class Thread extends Model
     {
         $user = $user ?: auth()->user();
         return $this->updated_at > cache($user->visitedThreadCacheKey($this));
+    }
+
+    public function visits()
+    {
+        return new Visits($this);
     }
 }

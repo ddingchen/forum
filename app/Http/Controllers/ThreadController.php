@@ -90,6 +90,7 @@ class ThreadController extends Controller
             auth()->user()->read($thread);
         }
 
+        $thread->visits()->record();
         $trending->touch($thread);
 
         return view('thread.show', [
