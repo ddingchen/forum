@@ -17,10 +17,6 @@ class Thread extends Model
     {
         parent::boot();
 
-        // static::addGlobalScope('replyCount', function ($builder) {
-        //     return $builder->withCount('replies');
-        // });
-
         static::addGlobalScope('creator', function ($builder) {
             return $builder->with('creator');
         });

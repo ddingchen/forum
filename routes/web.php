@@ -19,7 +19,9 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::resource('thread', 'ThreadController', ['except' => ['show']]);
+Route::get('thread', 'ThreadController@index');
+Route::get('thread/create', 'ThreadController@create');
+Route::post('thread', 'ThreadController@store')->middleware('email-not-confirmed');
 Route::get('thread/{channel}', 'ThreadController@index');
 Route::get('thread/{channel}/{thread}', 'ThreadController@show');
 Route::delete('thread/{channel}/{thread}', 'ThreadController@destroy');

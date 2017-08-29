@@ -18,11 +18,22 @@ class CreateThreadTest extends TestCase
             ->assertRedirect('login');
     }
 
+    public function test_an_authenticated_user_cannot_publish_threads_before_they_confirm_the_email()
+    {
+        $thread = make('App\Thread');
+        return $this->signIn()
+            ->withExceptionHandling()
+            ->post('thread', $thread->toArray())
+            ->assertRedirect('thread')
+            ->assertSessionHas('flash', 'Email must be confirmed first!.');
+    }
+
     public function test_an_authenticated_user_can_create_new_thread()
     {
-        $this->signIn();
         $thread = make('App\Thread');
-        $response = $this->post('thread', $thread->toArray());
+
+        $response = $this->publishThread($thread->toArray());
+
         $this->get($response->headers->get('Location'))
             ->assertSee($thread->title)
             ->assertSee($thread->body);
@@ -77,11 +88,21 @@ class CreateThreadTest extends TestCase
         $this->assertEquals(0, Activity::count());
     }
 
+    private function confirmEmail()
+    {
+        tap(auth()->user(), function ($user) {
+            $user->confirm = true;
+            $user->save();
+        });
+        return $this;
+    }
+
     private function publishThread($attributes = [])
     {
         $thread = make('App\Thread', $attributes);
-        return $this->withExceptionHandling()
-            ->signIn()
+        return $this->signIn()
+            ->confirmEmail()
+            ->withExceptionHandling()
             ->post('thread', $thread->toArray());
     }
 }

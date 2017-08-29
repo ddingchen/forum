@@ -8,7 +8,7 @@
 
 <script>
     export default {
-        props: ['message'],
+        props: ['message', 'status'],
         data() {
             return {
                 body: '',
@@ -26,14 +26,14 @@
         },
         created() {
             if(this.message) {
-                this.flash(this.message)
+                this.flash(this.message, this.status)
             }
-            window.events.$on('flash', ({message, level}) => this.flash(message, level))
+            window.events.$on('flash', ({message, status}) => this.flash(message, status))
         },
         methods: {
-            flash(message, level = 'success') {
+            flash(message, status = 'success') {
                 this.body = message
-                this.level = level
+                this.level = status
                 this.show = true
                 this.hide()
             },
