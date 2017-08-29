@@ -31,9 +31,9 @@
             window.events.$on('flash', ({message, status}) => this.flash(message, status))
         },
         methods: {
-            flash(message, status = 'success') {
+            flash(message, status) {
                 this.body = message
-                this.level = status
+                this.level = status ? status : 'success'
                 this.show = true
                 this.hide()
             },

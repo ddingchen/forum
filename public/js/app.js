@@ -13377,11 +13377,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     },
 
     methods: {
-        flash: function flash(message) {
-            var status = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'success';
-
+        flash: function flash(message, status) {
             this.body = message;
-            this.level = status;
+            this.level = status ? status : 'success';
             this.show = true;
             this.hide();
         },

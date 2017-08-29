@@ -25,7 +25,11 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'confirmation_token',
+    ];
+
+    protected $casts = [
+        'confirmed' => 'boolean',
     ];
 
     public function getRouteKeyName()
@@ -61,5 +65,11 @@ class User extends Authenticatable
     public function getAvatarPathAttribute($avatarPath)
     {
         return $avatarPath ? '/storage/' . $avatarPath : '/img/generic-avatar.png';
+    }
+
+    public function confirm()
+    {
+        $this->confirmed = true;
+        $this->save();
     }
 }

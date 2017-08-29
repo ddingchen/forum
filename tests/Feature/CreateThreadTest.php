@@ -25,13 +25,12 @@ class CreateThreadTest extends TestCase
             ->withExceptionHandling()
             ->post('thread', $thread->toArray())
             ->assertRedirect('thread')
-            ->assertSessionHas('flash', 'Email must be confirmed first!.');
+            ->assertSessionHas('flash.message', 'Email must be confirmed first!.');
     }
 
     public function test_an_authenticated_user_can_create_new_thread()
     {
         $thread = make('App\Thread');
-
         $response = $this->publishThread($thread->toArray());
 
         $this->get($response->headers->get('Location'))
@@ -91,7 +90,7 @@ class CreateThreadTest extends TestCase
     private function confirmEmail()
     {
         tap(auth()->user(), function ($user) {
-            $user->confirm = true;
+            $user->confirmed = true;
             $user->save();
         });
         return $this;
