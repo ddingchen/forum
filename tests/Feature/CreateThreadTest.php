@@ -20,8 +20,9 @@ class CreateThreadTest extends TestCase
 
     public function test_an_authenticated_user_cannot_publish_threads_before_they_confirm_the_email()
     {
+        $user = factory('App\User')->states('unconfirmed')->create();
         $thread = make('App\Thread');
-        return $this->signIn()
+        return $this->signIn($user)
             ->withExceptionHandling()
             ->post('thread', $thread->toArray())
             ->assertRedirect('thread')
@@ -87,20 +88,10 @@ class CreateThreadTest extends TestCase
         $this->assertEquals(0, Activity::count());
     }
 
-    private function confirmEmail()
-    {
-        tap(auth()->user(), function ($user) {
-            $user->confirmed = true;
-            $user->save();
-        });
-        return $this;
-    }
-
     private function publishThread($attributes = [])
     {
         $thread = make('App\Thread', $attributes);
         return $this->signIn()
-            ->confirmEmail()
             ->withExceptionHandling()
             ->post('thread', $thread->toArray());
     }
