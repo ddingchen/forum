@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Mail\PleaseConfirmYourEmail;
 use App\User;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -43,7 +42,10 @@ class RegisterTest extends TestCase
         $this->assertNotNull($user->confirmation_token);
         $this->get('register/confirm?token=' . $user->confirmation_token);
 
-        $this->assertTrue($user->fresh()->confirmed);
+        tap($user->fresh(), function ($user) {
+            $this->assertTrue($user->confirmed);
+            $this->assertNull($user->confirmation_token);
+        });
     }
 
     public function test_confirming_an_invalid_token()
