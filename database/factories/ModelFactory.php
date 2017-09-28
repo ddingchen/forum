@@ -24,11 +24,12 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->state(App\User::class, 'unconfirmed', function($faker) {
+$factory->state(App\User::class, 'unconfirmed', function ($faker) {
     return ['confirmed' => false];
 });
 
 $factory->define(App\Thread::class, function ($faker) {
+    $sentence = $faker->sentence;
     return [
         'user_id' => function () {
             return factory('App\User')->create()->id;
@@ -36,7 +37,8 @@ $factory->define(App\Thread::class, function ($faker) {
         'channel_id' => function () {
             return factory('App\Channel')->create()->id;
         },
-        'title' => $faker->sentence,
+        'slug' => str_slug($sentence),
+        'title' => $sentence,
         'body' => $faker->paragraph,
         'replies_count' => 0,
     ];
@@ -62,7 +64,7 @@ $factory->define(App\Channel::class, function ($faker) {
     ];
 });
 
-$factory->define(Illuminate\Notifications\DatabaseNotification::class, function($faker) {
+$factory->define(Illuminate\Notifications\DatabaseNotification::class, function ($faker) {
     return [
         'id' => Ramsey\Uuid\Uuid::uuid4()->toString(),
         'type' => 'App\Notifications\ThreadWasUpdated',

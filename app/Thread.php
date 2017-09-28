@@ -27,6 +27,11 @@ class Thread extends Model
 
     }
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function replies()
     {
         return $this->hasMany('App\Reply');
@@ -64,7 +69,7 @@ class Thread extends Model
 
     public function path()
     {
-        return "/thread/{$this->channel->slug}/{$this->id}";
+        return "/thread/{$this->channel->slug}/{$this->slug}";
     }
 
     public function subscribe($userId = null)
