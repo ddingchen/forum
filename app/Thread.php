@@ -109,6 +109,26 @@ class Thread extends Model
             ->exists();
     }
 
+    public function setSlugAttribute($value)
+    {
+        if (static::whereSlug($value)->exists()) {
+            $value = $this->increaseSlug();
+        }
+        $this->attributes['slug'] = $value;
+    }
+
+    public function increaseSlug()
+    {
+        $max = static::whereTitle($this->title)->latest('id')->value('slug');
+        if (preg_match('/-\d+$/', $max)) {
+            return preg_replace_callback('/(\d+)$/', function ($matches) {
+                return $matches[1] + 1;
+            }, $max);
+        }
+
+        return $max . '-2';
+    }
+
     public function hasUpdatesFor($user = null)
     {
         $user = $user ?: auth()->user();
