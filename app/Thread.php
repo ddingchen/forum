@@ -25,6 +25,11 @@ class Thread extends Model
             $thread->replies->each->delete();
         });
 
+        static::created(function ($thread) {
+            $thread->slug = str_slug($thread->title);
+            $thread->save();
+        });
+
     }
 
     public function getRouteKeyName()
@@ -109,24 +114,13 @@ class Thread extends Model
             ->exists();
     }
 
-    public function setSlugAttribute($value)
+    public function setSlugAttribute($slug)
     {
-        if (static::whereSlug($value)->exists()) {
-            $value = $this->increaseSlug();
-        }
-        $this->attributes['slug'] = $value;
-    }
-
-    public function increaseSlug()
-    {
-        $max = static::whereTitle($this->title)->latest('id')->value('slug');
-        if (preg_match('/-\d+$/', $max)) {
-            return preg_replace_callback('/(\d+)$/', function ($matches) {
-                return $matches[1] + 1;
-            }, $max);
+        if (static::whereSlug($slug)->exists()) {
+            $slug = $slug . '-' . $this->id;
         }
 
-        return $max . '-2';
+        $this->attributes['slug'] = $slug;
     }
 
     public function hasUpdatesFor($user = null)

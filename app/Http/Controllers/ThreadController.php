@@ -71,11 +71,15 @@ class ThreadController extends Controller
 
         $thread = Thread::create([
             'title' => $request->input('title'),
-            'slug' => str_slug($request->input('title')),
             'body' => $request->input('body'),
             'user_id' => auth()->id(),
             'channel_id' => $request->input('channel_id'),
         ]);
+
+        if ($request->wantsJson()) {
+            return $thread;
+        }
+
         return redirect($thread->path())->with('flash', 'Thread created!');
     }
 

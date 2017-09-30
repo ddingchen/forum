@@ -41,12 +41,14 @@ class CreateThreadTest extends TestCase
 
     public function test_thread_requires_unique_slugs()
     {
-        $thread = create('App\Thread', ['title' => 'Help me', 'slug' => 'help-me']);
-        // dd($thread->toArray());
-        $this->signIn()
-            ->post('thread', $thread->toArray());
+        create('App\Thread', [], 2);
+        $thread = create('App\Thread', ['title' => 'Help me 23']);
+        $thread = create('App\Thread', ['title' => 'Help me 23']);
 
-        $this->assertEquals('help-me-2', \App\Thread::latest('id')->value('slug'));
+        $json = $this->signIn()
+            ->postJson('thread', $thread->toArray())->json();
+
+        $this->assertEquals('help-me-23-' . $json['id'], $json['slug']);
     }
 
     public function test_a_thread_requires_a_title()
