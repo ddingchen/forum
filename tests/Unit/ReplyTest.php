@@ -36,4 +36,16 @@ class ReplyTest extends TestCase
 
         $this->assertEquals(['JaneDoe', 'FrankDoe'], $reply->mentionedUsers());
     }
+
+    public function test_it_knows_if_it_is_a_best_reply()
+    {
+        $reply = create('App\Reply');
+
+        $this->assertFalse($reply->isBest());
+
+        $reply->thread->markBestReply($reply);
+
+        $this->assertTrue($reply->isBest());
+
+    }
 }

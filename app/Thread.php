@@ -4,6 +4,7 @@ namespace App;
 
 use App\Events\ThreadReceivesNewReply;
 use App\Filters\ThreadFilter;
+use App\Reply;
 use App\Visits;
 use Illuminate\Database\Eloquent\Model;
 
@@ -132,5 +133,12 @@ class Thread extends Model
     public function visits()
     {
         return new Visits($this);
+    }
+
+    public function markBestReply(Reply $reply)
+    {
+        $this->update([
+            'best_reply_id' => $reply->id,
+        ]);
     }
 }

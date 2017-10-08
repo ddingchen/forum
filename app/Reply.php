@@ -53,4 +53,9 @@ class Reply extends Model
         preg_match_all('/\@([^\s\.]+)/', $this->body, $matches);
         return $matches[1];
     }
+
+    public function isBest()
+    {
+        return $this->thread->best_reply_id == $this->id;
+    }
 }
