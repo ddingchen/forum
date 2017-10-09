@@ -1,5 +1,5 @@
 <template>
-    <div :id='"reply-" + this.attributes.id' class="panel panel-default">
+    <div :id='"reply-" + this.attributes.id' class="panel" :class="isBest ? 'panel-success' : 'panel-default'">
         <div class="panel-heading">
         	<div class="level">
             	<h5 class="flex">
@@ -24,9 +24,13 @@
             <div v-else v-text="body"></div>
         </div>
 
-        <div v-if="canUpdate" class="panel-footer level">
-            <button class="btn btn-default btn-xs mr" @click="edit">Edit</button>
-            <button class="btn btn-default btn-xs mr" @click="destroy">Delete</button>
+        <div class="panel-footer level">
+            <div v-if="canUpdate">
+                <button class="btn btn-default btn-xs mr" @click="edit">Edit</button>
+                <button class="btn btn-default btn-xs mr" @click="destroy">Delete</button>
+            </div>
+
+            <button class="btn btn-default btn-xs ml-a" v-show="!isBest" @click="markBestReply">Best Reply</button>
         </div>
     </div>
 </template>
@@ -41,7 +45,8 @@
 			return {
 				editing: false,
 				body: this.attributes.body,
-				oldBody: ''
+				oldBody: '',
+                isBest: false,
 			}
 		},
 		computed: {
@@ -76,7 +81,10 @@
 
 				this.$emit('deleted')
 
-			}
+			},
+            markBestReply() {
+                this.isBest = true
+            }
 		}
 	}
 </script>

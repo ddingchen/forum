@@ -27,6 +27,7 @@
         .level { display: flex; align-items: center }
         .flex { flex-grow: 1 }
         .mr { margin-right: 1em }
+        .ml-a { margin-left: auto }
         [v-cloak] {display: none;}
     </style>
     @yield('style')
