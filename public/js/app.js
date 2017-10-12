@@ -11083,8 +11083,9 @@ module.exports = g;
 
 /***/ }),
 /* 10 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 
 /**
  * First we will load all of this project's JavaScript dependencies which
@@ -11096,10 +11097,23 @@ __webpack_require__(42);
 
 window.Vue = __webpack_require__(74);
 
-Vue.prototype.authorize = function (handle) {
-  var user = window.App.user;
-  return user ? handle(user) : false;
+var authorizations = __webpack_require__(84);
+Vue.prototype.authorize = function () {
+
+  if (!window.App.signedIn) return false;
+
+  for (var _len = arguments.length, params = Array(_len), _key = 0; _key < _len; _key++) {
+    params[_key] = arguments[_key];
+  }
+
+  if (typeof params[0] === 'string') {
+    return authorizations[params[0]](params[1]);
+  }
+
+  return params[0](window.App.User);
 };
+
+Vue.prototype.signedIn = window.App.signedIn;
 
 window.events = new Vue();
 
@@ -13655,20 +13669,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			editing: false,
 			body: this.attributes.body,
 			oldBody: '',
-			isBest: false
+			isBest: false,
+			reply: this.attributes
 		};
-	},
-	computed: {
-		signedIn: function signedIn() {
-			return window.App.signedIn;
-		},
-		canUpdate: function canUpdate() {
-			var _this = this;
-
-			return this.authorize(function (user) {
-				return _this.attributes.user_id == user.id;
-			});
-		}
 	},
 	methods: {
 		edit: function edit() {
@@ -13676,12 +13679,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			this.editing = true;
 		},
 		update: function update() {
-			var _this2 = this;
+			var _this = this;
 
 			axios.patch('/reply/' + this.attributes.id, {
 				body: this.body
 			}).then(function () {
-				_this2.editing = false;
+				_this.editing = false;
 				flash('Reply has been updated!');
 			}).catch(function (_ref) {
 				var response = _ref.response;
@@ -34664,7 +34667,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     }
   })]), _vm._v(" "), _c('div', {
     staticClass: "panel-footer level"
-  }, [(_vm.canUpdate) ? _c('div', [_c('button', {
+  }, [(_vm.authorize('updateReply', _vm.reply)) ? _c('div', [_c('button', {
     staticClass: "btn btn-default btn-xs mr",
     on: {
       "click": _vm.edit
@@ -44873,6 +44876,25 @@ module.exports = function(module) {
 __webpack_require__(10);
 module.exports = __webpack_require__(11);
 
+
+/***/ }),
+/* 77 */,
+/* 78 */,
+/* 79 */,
+/* 80 */,
+/* 81 */,
+/* 82 */,
+/* 83 */,
+/* 84 */
+/***/ (function(module, exports) {
+
+var user = window.App.user;
+
+module.exports = {
+    updateReply: function updateReply(reply) {
+        return reply.user_id == user.id;
+    }
+};
 
 /***/ })
 /******/ ]);
