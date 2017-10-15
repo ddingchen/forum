@@ -46,10 +46,15 @@
 				editing: false,
 				body: this.attributes.body,
 				oldBody: '',
-                isBest: false,
+                isBest: this.attributes.isBest,
                 reply: this.attributes
 			}
 		},
+        created() {
+            window.events.$on('best-reply', (bestReply) => {
+                this.isBest = this.attributes.id == bestReply.id
+            });
+        },
 		methods: {
 			edit() {
 				this.oldBody = this.body
@@ -76,6 +81,8 @@
 
 			},
             markBestReply() {
+                axios.post(`/reply/${this.attributes.id}/best`);
+                window.events.$emit('best-reply', this.attributes);
                 this.isBest = true
             }
 		}
