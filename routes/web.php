@@ -33,7 +33,7 @@ Route::post('thread/{channel}/{thread}/subscription', 'ThreadSubscriptionControl
 Route::delete('thread/{channel}/{thread}/subscription', 'ThreadSubscriptionController@destroy')->middleware('auth');
 
 Route::post('reply/{reply}/best', 'BestReplyController@store')->name('best-reply.store');
-Route::delete('reply/{reply}', 'ReplyController@destroy');
+Route::delete('reply/{reply}', 'ReplyController@destroy')->name('reply.delete');
 Route::patch('reply/{reply}', 'ReplyController@update');
 
 Route::post('reply/{reply}/favorites', 'FavoriteController@store');
