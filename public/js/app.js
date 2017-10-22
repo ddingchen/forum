@@ -13657,26 +13657,30 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
 
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-	props: ['attributes'],
+	props: ['reply'],
 	components: { Favorite: __WEBPACK_IMPORTED_MODULE_0__Favorite_vue___default.a },
 	data: function data() {
 		return {
 			editing: false,
-			body: this.attributes.body,
+			body: this.reply.body,
 			oldBody: '',
-			isBest: this.attributes.isBest,
-			reply: this.attributes
+			isBest: this.reply.isBest
 		};
 	},
 	created: function created() {
 		var _this = this;
 
 		window.events.$on('best-reply', function (bestReply) {
-			_this.isBest = _this.attributes.id == bestReply.id;
+			_this.isBest = _this.reply.id == bestReply.id;
 		});
 	},
 
@@ -13688,7 +13692,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 		update: function update() {
 			var _this2 = this;
 
-			axios.patch('/reply/' + this.attributes.id, {
+			axios.patch('/reply/' + this.reply.id, {
 				body: this.body
 			}).then(function () {
 				_this2.editing = false;
@@ -13704,13 +13708,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			this.editing = false;
 		},
 		destroy: function destroy() {
-			axios.delete('/reply/' + this.attributes.id);
+			axios.delete('/reply/' + this.reply.id);
 
 			this.$emit('deleted');
 		},
 		markBestReply: function markBestReply() {
-			axios.post('/reply/' + this.attributes.id + '/best');
-			window.events.$emit('best-reply', this.attributes);
+			axios.post('/reply/' + this.reply.id + '/best');
+			window.events.$emit('best-reply', this.reply);
 			this.isBest = true;
 		}
 	}
@@ -13830,7 +13834,15 @@ var user = window.App.user;
 
 module.exports = {
     updateReply: function updateReply(reply) {
-        return reply.user_id == user.id;
+        return this.updateModel(reply);
+    },
+    updateThread: function updateThread(thread) {
+        return this.updateModel(thread);
+    },
+    updateModel: function updateModel(model) {
+        var prop = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'user_id';
+
+        return model[prop] == user.id;
     }
 };
 
@@ -34625,7 +34637,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "panel",
     class: _vm.isBest ? 'panel-success' : 'panel-default',
     attrs: {
-      "id": "reply-" + this.attributes.id
+      "id": "reply-" + _vm.reply.id
     }
   }, [_c('div', {
     staticClass: "panel-heading"
@@ -34635,14 +34647,14 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "flex"
   }, [_c('a', {
     attrs: {
-      "href": '/profile/' + this.attributes.owner.name
+      "href": '/profile/' + _vm.reply.owner.name
     },
     domProps: {
-      "textContent": _vm._s(this.attributes.owner.name)
+      "textContent": _vm._s(_vm.reply.owner.name)
     }
-  }), _vm._v(" said " + _vm._s(this.attributes.created_at) + "\n            \t")]), _vm._v(" "), (_vm.signedIn) ? _c('favorite', {
+  }), _vm._v(" said " + _vm._s(_vm.reply.created_at) + "\n            \t")]), _vm._v(" "), (_vm.signedIn) ? _c('favorite', {
     attrs: {
-      "reply": _vm.attributes
+      "reply": _vm.reply
     }
   }) : _vm._e()], 1)]), _vm._v(" "), _c('div', {
     staticClass: "panel-body"
@@ -34686,7 +34698,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     domProps: {
       "textContent": _vm._s(_vm.body)
     }
-  })]), _vm._v(" "), _c('div', {
+  })]), _vm._v(" "), (_vm.authorize('updateReply', _vm.reply) || _vm.authorize('updateThread', _vm.reply.thread)) ? _c('div', {
     staticClass: "panel-footer level"
   }, [(_vm.authorize('updateReply', _vm.reply)) ? _c('div', [_c('button', {
     staticClass: "btn btn-default btn-xs mr",
@@ -34698,7 +34710,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     on: {
       "click": _vm.destroy
     }
-  }, [_vm._v("Delete")])]) : _vm._e(), _vm._v(" "), _c('button', {
+  }, [_vm._v("Delete")])]) : _vm._e(), _vm._v(" "), (_vm.authorize('updateThread', _vm.reply.thread)) ? _c('button', {
     directives: [{
       name: "show",
       rawName: "v-show",
@@ -34709,7 +34721,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     on: {
       "click": _vm.markBestReply
     }
-  }, [_vm._v("Best Reply")])])])
+  }, [_vm._v("Best Reply")]) : _vm._e()]) : _vm._e()])
 },staticRenderFns: []}
 module.exports.render._withStripped = true
 if (false) {
@@ -34854,7 +34866,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       key: item.id
     }, [_c('reply', {
       attrs: {
-        "attributes": item
+        "reply": item
       },
       on: {
         "deleted": function($event) {

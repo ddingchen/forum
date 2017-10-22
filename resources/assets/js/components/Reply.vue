@@ -1,12 +1,12 @@
 <template>
-    <div :id='"reply-" + this.attributes.id' class="panel" :class="isBest ? 'panel-success' : 'panel-default'">
+    <div :id='"reply-" + reply.id' class="panel" :class="isBest ? 'panel-success' : 'panel-default'">
         <div class="panel-heading">
         	<div class="level">
             	<h5 class="flex">
-            		<a :href="'/profile/' + this.attributes.owner.name" v-text="this.attributes.owner.name"></a> said {{ this.attributes.created_at }}
+            		<a :href="'/profile/' + reply.owner.name" v-text="reply.owner.name"></a> said {{ reply.created_at }}
             	</h5>
 
-                <favorite v-if='signedIn' :reply="attributes"></favorite>
+                <favorite v-if='signedIn' :reply="reply"></favorite>
 
         	</div>
         </div>
@@ -24,13 +24,18 @@
             <div v-else v-text="body"></div>
         </div>
 
-        <div class="panel-footer level">
+        <div class="panel-footer level"
+            v-if="authorize('updateReply', reply) || authorize('updateThread', reply.thread)">
+
             <div v-if="authorize('updateReply', reply)">
                 <button class="btn btn-default btn-xs mr" @click="edit">Edit</button>
                 <button class="btn btn-default btn-xs mr" @click="destroy">Delete</button>
             </div>
 
-            <button class="btn btn-default btn-xs ml-a" v-show="!isBest" @click="markBestReply">Best Reply</button>
+            <button class="btn btn-default btn-xs ml-a"
+                v-if="authorize('updateThread', reply.thread)"
+                v-show="!isBest" 
+                @click="markBestReply">Best Reply</button>
         </div>
     </div>
 </template>
@@ -39,20 +44,19 @@
 	import Favorite from './Favorite.vue'
 
 	export default {
-		props: ['attributes'],
+		props: ['reply'],
 		components: { Favorite },
 		data: function() {
 			return {
 				editing: false,
-				body: this.attributes.body,
+				body: this.reply.body,
 				oldBody: '',
-                isBest: this.attributes.isBest,
-                reply: this.attributes
+                isBest: this.reply.isBest
 			}
 		},
         created() {
             window.events.$on('best-reply', (bestReply) => {
-                this.isBest = this.attributes.id == bestReply.id
+                this.isBest = this.reply.id == bestReply.id
             });
         },
 		methods: {
@@ -61,7 +65,7 @@
 				this.editing = true
 			},
 			update() {
-				axios.patch(`/reply/${this.attributes.id}`, {
+				axios.patch(`/reply/${this.reply.id}`, {
 					body: this.body
 				}).then(() => {
 					this.editing = false
@@ -75,14 +79,14 @@
 				this.editing = false
 			},
 			destroy() {
-				axios.delete(`/reply/${this.attributes.id}`)
+				axios.delete(`/reply/${this.reply.id}`)
 
 				this.$emit('deleted')
 
 			},
             markBestReply() {
-                axios.post(`/reply/${this.attributes.id}/best`);
-                window.events.$emit('best-reply', this.attributes);
+                axios.post(`/reply/${this.reply.id}/best`);
+                window.events.$emit('best-reply', this.reply);
                 this.isBest = true
             }
 		}
