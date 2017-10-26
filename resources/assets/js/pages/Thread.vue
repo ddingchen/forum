@@ -2,11 +2,12 @@
 	import Replies from '../components/Replies.vue'
 
 	export default {
-		props: ['initRepliesCount'],
+		props: ['dataRepliesCount', 'dataLocked'],
 		components: { Replies },
 		data() {
 			return {
-				count: this.initRepliesCount
+				count: this.dataRepliesCount,
+				locked: this.dataLocked
 			}
 		},
 		methods: {

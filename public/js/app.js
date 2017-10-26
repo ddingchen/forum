@@ -13575,6 +13575,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
 
 
 
@@ -13815,11 +13816,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-	props: ['initRepliesCount'],
+	props: ['dataRepliesCount', 'dataLocked'],
 	components: { Replies: __WEBPACK_IMPORTED_MODULE_0__components_Replies_vue___default.a },
 	data: function data() {
 		return {
-			count: this.initRepliesCount
+			count: this.dataRepliesCount,
+			locked: this.dataLocked
 		};
 	},
 
@@ -13833,16 +13835,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 var user = window.App.user;
 
 module.exports = {
-    updateReply: function updateReply(reply) {
-        return this.updateModel(reply);
-    },
-    updateThread: function updateThread(thread) {
-        return this.updateModel(thread);
-    },
-    updateModel: function updateModel(model) {
+    owner: function owner(model) {
         var prop = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'user_id';
 
         return model[prop] == user.id;
+    },
+    isAdmin: function isAdmin() {
+        return ['dc'].includes(user.name);
     }
 };
 
@@ -34698,9 +34697,9 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     domProps: {
       "textContent": _vm._s(_vm.body)
     }
-  })]), _vm._v(" "), (_vm.authorize('updateReply', _vm.reply) || _vm.authorize('updateThread', _vm.reply.thread)) ? _c('div', {
+  })]), _vm._v(" "), (_vm.authorize('owner', _vm.reply) || _vm.authorize('owner', _vm.reply.thread)) ? _c('div', {
     staticClass: "panel-footer level"
-  }, [(_vm.authorize('updateReply', _vm.reply)) ? _c('div', [_c('button', {
+  }, [(_vm.authorize('owner', _vm.reply)) ? _c('div', [_c('button', {
     staticClass: "btn btn-default btn-xs mr",
     on: {
       "click": _vm.edit
@@ -34710,7 +34709,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     on: {
       "click": _vm.destroy
     }
-  }, [_vm._v("Delete")])]) : _vm._e(), _vm._v(" "), (_vm.authorize('updateThread', _vm.reply.thread)) ? _c('button', {
+  }, [_vm._v("Delete")])]) : _vm._e(), _vm._v(" "), (_vm.authorize('owner', _vm.reply.thread)) ? _c('button', {
     directives: [{
       name: "show",
       rawName: "v-show",
@@ -34881,11 +34880,11 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     on: {
       "update": _vm.fetch
     }
-  }), _vm._v(" "), _c('new-reply', {
+  }), _vm._v(" "), (!_vm.$parent.locked) ? _c('new-reply', {
     on: {
       "new": _vm.add
     }
-  })], 2)
+  }) : _c('p', [_vm._v("This thread has been locked. No more replies are allowed.")])], 2)
 },staticRenderFns: []}
 module.exports.render._withStripped = true
 if (false) {
