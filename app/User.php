@@ -52,6 +52,11 @@ class User extends Authenticatable
         return $this->hasOne('App\Reply')->latest();
     }
 
+    public function isAdmin()
+    {
+        return in_array($this->name, ['dc']);
+    }
+
     public function read($thread)
     {
         cache()->forever($this->visitedThreadCacheKey($thread), Carbon::now());

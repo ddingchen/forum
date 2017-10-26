@@ -28,6 +28,10 @@ $factory->state(App\User::class, 'unconfirmed', function ($faker) {
     return ['confirmed' => false];
 });
 
+$factory->state(App\User::class, 'admin', function ($faker) {
+    return ['name' => 'dc'];
+});
+
 $factory->define(App\Thread::class, function ($faker) {
     $sentence = $faker->sentence;
     return [

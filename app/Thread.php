@@ -14,6 +14,10 @@ class Thread extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'locked' => 'boolean',
+    ];
+
     protected static function boot()
     {
         parent::boot();
