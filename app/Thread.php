@@ -78,6 +78,12 @@ class Thread extends Model
         return "/thread/{$this->channel->slug}/{$this->slug}";
     }
 
+    public function lock()
+    {
+        $this->locked = true;
+        $this->save();
+    }
+
     public function subscribe($userId = null)
     {
         $this->subscriptions()->create([

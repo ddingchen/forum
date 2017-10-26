@@ -41,6 +41,7 @@ $factory->define(App\Thread::class, function ($faker) {
         'title' => $sentence,
         'body' => $faker->paragraph,
         'replies_count' => 0,
+        'locked' => false,
     ];
 });
 

@@ -36,6 +36,15 @@ class ThreadTest extends TestCase
         $this->assertCount(1, $this->thread->replies);
     }
 
+    public function test_thread_may_be_locked()
+    {
+        $this->assertFalse($this->thread->locked);
+
+        $this->thread->lock();
+
+        $this->assertTrue($this->thread->locked);
+    }
+
     public function test_a_thread_notifies_all_subscribers_when_a_reply_is_added()
     {
         Notification::fake();
