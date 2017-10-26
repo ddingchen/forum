@@ -2,16 +2,19 @@
 	import Replies from '../components/Replies.vue'
 
 	export default {
-		props: ['dataRepliesCount', 'dataLocked'],
+		props: ['thread'],
 		components: { Replies },
 		data() {
 			return {
-				count: this.dataRepliesCount,
-				locked: this.dataLocked
+				count: this.thread.replies_count,
+				locked: this.thread.locked
 			}
 		},
 		methods: {
-			
+			toggleLock () {
+				axios[this.locked ? 'delete' : 'post']('/locked-thread/' + this.thread.slug);
+				this.locked = !this.locked;
+			}
 		}
 	}
 </script>

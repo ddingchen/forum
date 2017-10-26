@@ -13816,16 +13816,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-	props: ['dataRepliesCount', 'dataLocked'],
+	props: ['thread'],
 	components: { Replies: __WEBPACK_IMPORTED_MODULE_0__components_Replies_vue___default.a },
 	data: function data() {
 		return {
-			count: this.dataRepliesCount,
-			locked: this.dataLocked
+			count: this.thread.replies_count,
+			locked: this.thread.locked
 		};
 	},
 
-	methods: {}
+	methods: {
+		toggleLock: function toggleLock() {
+			axios[this.locked ? 'delete' : 'post']('/locked-thread/' + this.thread.slug);
+			this.locked = !this.locked;
+		}
+	}
 });
 
 /***/ }),

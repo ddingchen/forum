@@ -33,6 +33,7 @@ Route::post('thread/{channel}/{thread}/subscription', 'ThreadSubscriptionControl
 Route::delete('thread/{channel}/{thread}/subscription', 'ThreadSubscriptionController@destroy')->middleware('auth');
 
 Route::post('locked-thread/{thread}', 'LockedThreadController@store')->name('locked-thread.store')->middleware('admin');
+Route::delete('locked-thread/{thread}', 'LockedThreadController@destroy')->name('locked-thread.destroy')->middleware('admin');
 
 Route::post('reply/{reply}/best', 'BestReplyController@store')->name('best-reply.store');
 Route::delete('reply/{reply}', 'ReplyController@destroy')->name('reply.delete');
