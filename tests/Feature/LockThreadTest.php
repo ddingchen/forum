@@ -49,9 +49,9 @@ class LockThreadTest extends TestCase
         $this->signIn();
 
         $thread = create(Thread::class);
-        $thread->lock();
+        $thread->update(['locked' => true]);
 
-        $this->post($thread->path() . '/reply', [
+        $response = $this->post($thread->path() . '/reply', [
             'body' => 'something',
             'user_id' => auth()->id(),
         ])->assertStatus(422);

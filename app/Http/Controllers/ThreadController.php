@@ -20,7 +20,7 @@ class ThreadController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Channel $channel = null, ThreadFilter $filter, Trending $trending)
+    public function index(Channel $channel, ThreadFilter $filter, Trending $trending)
     {
         $threads = $this->getThreads($channel, $filter);
 
