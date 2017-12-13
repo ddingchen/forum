@@ -24,6 +24,7 @@ Route::get('thread/create', 'ThreadController@create');
 Route::post('thread', 'ThreadController@store')->middleware('email-not-confirmed');
 Route::get('thread/{channel}', 'ThreadController@index');
 Route::get('thread/{channel}/{thread}', 'ThreadController@show');
+Route::patch('thread/{channel}/{thread}', 'ThreadController@update');
 Route::delete('thread/{channel}/{thread}', 'ThreadController@destroy');
 
 Route::get('thread/{channel}/{thread}/reply', 'ReplyController@index');
