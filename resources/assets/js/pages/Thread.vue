@@ -8,20 +8,40 @@
 			return {
 				count: this.thread.replies_count,
 				locked: this.thread.locked,
+				title: this.thread.title,
+				body: this.thread.body,
+				form: {},
 				editing: false
 			}
 		},
+		created() {
+			this.resetForm()
+		},
 		methods: {
 			toggleLock () {
-				axios[this.locked ? 'delete' : 'post']('/locked-thread/' + this.thread.slug);
+				let uri = '/locked-thread/' + this.thread.slug
+				axios[this.locked ? 'delete' : 'post'](uri);
 				this.locked = !this.locked;
 			},
 			edit() {
 				this.editing = true
 			},
-			cancel() {
+			resetForm() {
+				this.form = {
+					title: this.thread.title,
+					body: this.thread.body
+				}
 				this.editing = false
-			}
+			},
+			update() {
+				let uri = '/thread/' + this.thread.channel.name + '/' + this.thread.slug
+				axios.patch(uri, this.form).then(() => {
+					this.editing = false
+					this.title = this.form.title
+					this.body = this.form.body
+					flash('Thread was updated!')
+				})
+			},
 		}
 	}
 </script>
