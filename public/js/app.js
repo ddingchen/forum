@@ -13821,7 +13821,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 	data: function data() {
 		return {
 			count: this.thread.replies_count,
-			locked: this.thread.locked
+			locked: this.thread.locked,
+			editing: false
 		};
 	},
 
@@ -13829,6 +13830,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 		toggleLock: function toggleLock() {
 			axios[this.locked ? 'delete' : 'post']('/locked-thread/' + this.thread.slug);
 			this.locked = !this.locked;
+		},
+		edit: function edit() {
+			this.editing = true;
+		},
+		cancel: function cancel() {
+			this.editing = false;
 		}
 	}
 });
