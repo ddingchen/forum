@@ -7,10 +7,11 @@ use App\Filters\ThreadFilter;
 use App\Reply;
 use App\Visits;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class Thread extends Model
 {
-    use RecordActivity;
+    use RecordActivity, Searchable;
 
     protected $guarded = [];
 
