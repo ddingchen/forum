@@ -22,6 +22,7 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('thread', 'ThreadController@index');
 Route::get('thread/create', 'ThreadController@create');
 Route::post('thread', 'ThreadController@store')->middleware('email-not-confirmed');
+Route::get('thread/search', 'SearchController@show');
 Route::get('thread/{channel}', 'ThreadController@index');
 Route::get('thread/{channel}/{thread}', 'ThreadController@show');
 Route::patch('thread/{channel}/{thread}', 'ThreadController@update');
