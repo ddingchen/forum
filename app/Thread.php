@@ -19,13 +19,13 @@ class Thread extends Model
         'locked' => 'boolean',
     ];
 
+    protected $appends = ['visits'];
+
+    protected $with = ['creator', 'channel'];
+
     protected static function boot()
     {
         parent::boot();
-
-        static::addGlobalScope('creator', function ($builder) {
-            return $builder->with('creator');
-        });
 
         static::deleting(function ($thread) {
             $thread->replies->each->delete();
@@ -118,6 +118,11 @@ class Thread extends Model
         return $this->subscriptions()
             ->where('user_id', auth()->id())
             ->exists();
+    }
+
+    public function getVisitsAttribute()
+    {
+        return $this->visits()->count();
     }
 
     public function setSlugAttribute($slug)
