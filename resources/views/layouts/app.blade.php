@@ -29,6 +29,7 @@
         .mr { margin-right: 1em }
         .ml-a { margin-left: auto }
         [v-cloak] {display: none;}
+        .ais-highlight > em { background-color: yellow }
     </style>
     @yield('style')
 </head>
