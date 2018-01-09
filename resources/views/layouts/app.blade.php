@@ -12,6 +12,7 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/trix/0.11.1/trix.css" rel="stylesheet">
 
     <!-- Scripts -->
     <script>
