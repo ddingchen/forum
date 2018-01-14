@@ -26666,18 +26666,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 
 
@@ -26718,6 +26706,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 				_this.body = '';
 				_this.$emit('new', data);
+				_this.$emit('complete');
 			}).catch(function (_ref2) {
 				var response = _ref2.response;
 
@@ -27057,12 +27046,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-    props: ['name', 'value'],
+    props: ['name', 'value', 'placeholder'],
     mounted: function mounted() {
         var _this = this;
 
         this.$refs.trix.addEventListener('trix-change', function (e) {
             _this.$emit('input', e.target.innerHTML);
+        });
+        this.$parent.$on('complete', function () {
+            _this.$refs.trix.value = '';
         });
     }
 });
@@ -57677,7 +57669,8 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }), _vm._v(" "), _c('trix-editor', {
     ref: "trix",
     attrs: {
-      "input": "trix"
+      "input": "trix",
+      "placeholder": _vm.placeholder
     }
   })], 1)
 },staticRenderFns: []}
@@ -57884,31 +57877,22 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "panel-body"
   }, [(_vm.editing) ? _c('div', [_c('form', {
     on: {
-      "submit": _vm.update
+      "submit": function($event) {
+        $event.preventDefault();
+        _vm.update($event)
+      }
     }
   }, [_c('div', {
     staticClass: "form-group"
-  }, [_c('textarea', {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
+  }, [_c('wysiwyg', {
+    model: {
       value: (_vm.body),
+      callback: function($$v) {
+        _vm.body = $$v
+      },
       expression: "body"
-    }],
-    staticClass: "form-control",
-    attrs: {
-      "required": ""
-    },
-    domProps: {
-      "value": (_vm.body)
-    },
-    on: {
-      "input": function($event) {
-        if ($event.target.composing) { return; }
-        _vm.body = $event.target.value
-      }
     }
-  })]), _vm._v(" "), _c('button', {
+  })], 1), _vm._v(" "), _c('button', {
     staticClass: "btn btn-primary btn-xs"
   }, [_vm._v("Confirm")]), _vm._v(" "), _c('button', {
     staticClass: "btn btn-link btn-xs",
@@ -57920,7 +57904,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     }
   }, [_vm._v("Cancel")])])]) : _c('div', {
     domProps: {
-      "textContent": _vm._s(_vm.body)
+      "innerHTML": _vm._s(_vm.body)
     }
   })]), _vm._v(" "), (_vm.authorize('owner', _vm.reply) || _vm.authorize('owner', _vm.reply.thread)) ? _c('div', {
     staticClass: "panel-footer level"
@@ -58005,29 +57989,18 @@ if (false) {
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', [(_vm.signedIn) ? _c('div', [_c('div', {
     staticClass: "form-group"
-  }, [_c('textarea', {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
-      value: (_vm.body),
-      expression: "body"
-    }],
-    staticClass: "form-control",
+  }, [_c('wysiwyg', {
     attrs: {
-      "id": "body",
-      "rows": "5",
       "placeholder": "say something ..."
     },
-    domProps: {
-      "value": (_vm.body)
-    },
-    on: {
-      "input": function($event) {
-        if ($event.target.composing) { return; }
-        _vm.body = $event.target.value
-      }
+    model: {
+      value: (_vm.body),
+      callback: function($$v) {
+        _vm.body = $$v
+      },
+      expression: "body"
     }
-  })]), _vm._v(" "), _c('button', {
+  })], 1), _vm._v(" "), _c('button', {
     staticClass: "btn btn-default",
     on: {
       "click": _vm.confirm

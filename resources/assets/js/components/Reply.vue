@@ -13,15 +13,15 @@
 
         <div class="panel-body">
             <div v-if="editing">
-            	<form @submit="update">
+            	<form @submit.prevent="update">
 	                <div class="form-group">
-	                    <textarea class="form-control" v-model="body" required></textarea>
+                        <wysiwyg v-model="body"></wysiwyg>
 	                </div>
 	                <button class="btn btn-primary btn-xs">Confirm</button>
 	                <button class="btn btn-link btn-xs" type="button" @click="cancel">Cancel</button>
                 </form>
             </div>
-            <div v-else v-text="body"></div>
+            <div v-else v-html="body"></div>
         </div>
 
         <div class="panel-footer level"

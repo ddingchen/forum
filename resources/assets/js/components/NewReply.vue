@@ -1,28 +1,16 @@
 <template>
 	<div>
-	<!-- @if(Auth::check()) -->
-        <!-- <form method="post" action="{{ $thread->path() }}/reply"> -->
-            <!-- {{ csrf_field() }} -->
         <div v-if="signedIn">
             <div class="form-group">
-                <textarea
-                	id="body"
-                	class="form-control" 
-                	rows="5" 
-                	placeholder="say something ..."
-                	v-model='body'
-                	></textarea>
+                <wysiwyg v-model='body' placeholder="say something ..."></wysiwyg>
             </div>
             <button 
             	class="btn btn-default"
             	@click='confirm'>Submit</button>
         </div>
-        <!-- </form> -->
-    <!-- @else -->
     	<div v-else>
         	<p class="text-center">Please <a href="/login">sign in</a> to participate in forum.</p>
         </div>
-    <!-- @endif -->
     </div>
 </template>
 
@@ -60,6 +48,7 @@
 				}).then(({ data }) => {
 					this.body = ''
 					this.$emit('new', data)
+                    this.$emit('complete')
 				}).catch(({ response }) => {
 					flash(response.data, 'danger')
 				})
